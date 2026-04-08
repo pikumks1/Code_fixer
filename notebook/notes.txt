@@ -1,0 +1,33 @@
+// to take general notes
+
+1. install python 
+    >> winget install Python.Python.3.11
+2. Windows local machine me python setup steps
+    1.	Check for installed else install python first.
+    2.	Go to folder and create env >> python -m venv venv
+            for speceific version invornment    >> py -3.11 -m venv venv 
+    3.	Activate env to start working >> .\venv\Scripts\Activate.ps1
+
+python version check: python --version
+what all versions intalled: py -0
+assign python 3.11 : py -3.11
+
+
+3. if __name__ == "__main__"
+    >> hamesha us file me likhte hain jise tum directly run karna chahte ho — usually main.py.
+
+4. __init__.py
+    >> dummy file, just to mark package folder
+    __pycache__
+    >> ye files store krta h bytecode me, for faster process next time
+
+5. GIT Commands:
+1.	Initialize Git in VS Code
+    git init
+    git add .
+    git commit -m "Initial commit: Siebel script correction logic"
+2.	Connect VS Code to Bitbucket
+    git remote add origin https://github.com/pikumks1/Siebel-Script-Fixer
+3.	Push your Code
+    git branch -M main
+    git push -u origin main
