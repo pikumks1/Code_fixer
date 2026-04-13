@@ -43,18 +43,9 @@
 
     <div class="editor-container">
         
-        <!-- Left Panel -->
         <div class="editor-box">
-            <div class="header">Original Code</div>
-            <div id="inputEditor" class="editor"></div>
-            <!--textarea id="input" placeholder="Paste your code here..."></textarea-->
-        </div>
-
-        <!-- Right Panel -->
-        <div class="editor-box">
-            <div class="header">Fixed Code</div>
-            <div id="outputEditor" class="editor"></div>
-            <!--textarea id="output" placeholder="Output will appear here..." readonly></textarea-->
+            <div class="header">Code Difference</div>
+            <div id="diffEditor" class="editor"></div>
         </div>
 
     </div>
@@ -69,22 +60,30 @@
 let inputEditor, outputEditor;
 
 // Monaco init
+let diffEditor;
+
 require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@latest/min/vs' }});
 
 require(['vs/editor/editor.main'], function () {
 
-    inputEditor = monaco.editor.create(document.getElementById('inputEditor'), {
-        value: "// Paste your code here",
-        language: "javascript",
-        theme: "vs"
+    diffEditor = monaco.editor.createDiffEditor(
+        document.getElementById('diffEditor'),
+        {
+            theme: "vs",
+            automaticLayout: true
+        }
+    );
+
+    const originalModel = monaco.editor.createModel("// Original code", "javascript");
+    const modifiedModel = monaco.editor.createModel("// Fixed code", "javascript");
+
+    diffEditor.setModel({
+        original: originalModel,
+        modified: modifiedModel
     });
 
-    outputEditor = monaco.editor.create(document.getElementById('outputEditor'), {
-        value: "// Output will appear here",
-        language: "javascript",
-        theme: "vs",
-        readOnly: true
-    });
+    diffEditor.getOriginalEditor().updateOptions({ readOnly: false });
+    diffEditor.getModifiedEditor().updateOptions({ readOnly: true });
 
 });
 
@@ -94,7 +93,7 @@ let isDark = true;
 function toggleTheme() {
     isDark = !isDark;
 
-    const theme = isDark ? "vs-dark" : "vs";
+    const theme = isDark ? "vs" : "vs-dark";
     monaco.editor.setTheme(theme);
 
     // optional: body background bhi change
@@ -104,23 +103,19 @@ function toggleTheme() {
 // Existing function (modified)
 async function processCode() {
 
-    const input = inputEditor.getValue();  // ✅ change here
-    if (!inputEditor) {
-        alert("Editor not loaded yet");
-        return;
-    }
+    const originalCode = diffEditor.getModel().original.getValue();
 
     const res = await fetch("https://code-fixer-568v.onrender.com/process", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ code: input })
+        body: JSON.stringify({ code: originalCode })
     });
 
     const data = await res.json();
 
-    outputEditor.setValue(data.fixed_code);  // ✅ change here
+    diffEditor.getModel().modified.setValue(data.fixed_code);
 }
 </script>
 
