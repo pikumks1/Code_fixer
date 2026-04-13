@@ -1,0 +1,26 @@
+function UpdateAccount() {
+    var boAcc = TheApplication().GetBusObject("Account");
+    var bcAcc = boAcc.GetBusComp("Account");
+    var theapp = TheApplication();
+    var view = theapp.GetActiveView();
+    var a:Number = 10;
+   // var test ="abc";
+    view="View Name"; var bo, bc, itme1, item2;
+    /*var m1 = 10, m2, m3=20, m4="", m5 = null;*/
+    var n1 = 10; /*n3=20, n4="", n5 = null;*/ var n6="20";
+    var o1 = 10; //no=20=null;
+    try {
+        var x="";
+        var x="", y="12", z="", a="";
+        bcAcc.WriteRecord();
+        
+
+    }
+    var abc="";
+    finally{
+        bcAcc = null;
+        x=null;
+        
+    }
+    return o1;
+}

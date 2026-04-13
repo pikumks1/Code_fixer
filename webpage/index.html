@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Code Fixer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Code Fixer Tool</h2>
+
+    <div class="editor-container">
+        
+        <!-- Left Panel -->
+        <div class="editor-box">
+            <div class="header">Original Code</div>
+            <textarea id="input" placeholder="Paste your code here..."></textarea>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="editor-box">
+            <div class="header">Fixed Code</div>
+            <textarea id="output" placeholder="Output will appear here..." readonly></textarea>
+        </div>
+
+    </div>
+
+    <div class="button-container">
+        <button onclick="processCode()">Fix Code</button>
+    </div>
+
+</div>
+
+<script>
+async function processCode() {
+    const input = document.getElementById("input").value;
+
+    const res = await fetch("http://127.0.0.1:8000/process", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ code: input })
+    });
+
+    const data = await res.json();
+    document.getElementById("output").value = data.fixed_code;
+}
+</script>
+
+</body>
+</html>
