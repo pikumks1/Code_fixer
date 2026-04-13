@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Code Fixer</title>
-    <link rel="stylesheet" href="webpage/style.css">
+    <link rel="stylesheet" href="style.css"> <!-- for local testing -->
+    <!--link rel="stylesheet" href="webpage/style.css"> <!-- chnaged to deploy on vercel -->
+    <!-- Monaco CDN -->
+    <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
 </head>
 <body>
 
@@ -11,18 +14,47 @@
 
     <h2>Code Fixer Tool</h2>
 
+    <div class="header-bar">
+    <div class="left">
+        <span class="logo">CodeFixer</span>
+        <!-- <span class="menu active">Text</span>
+        <span class="menu">Images</span>
+        <span class="menu">Documents</span> -->
+    </div>
+
+    <div class="right">
+        <!--button onclick="toggleTheme()" class="theme-btn">🌙</button-->
+        <button onclick="toggleTheme()" class="theme-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+    </div>
+
+    </div>
+
     <div class="editor-container">
         
         <!-- Left Panel -->
         <div class="editor-box">
             <div class="header">Original Code</div>
-            <textarea id="input" placeholder="Paste your code here..."></textarea>
+            <div id="inputEditor" class="editor"></div>
+            <!--textarea id="input" placeholder="Paste your code here..."></textarea-->
         </div>
 
         <!-- Right Panel -->
         <div class="editor-box">
             <div class="header">Fixed Code</div>
-            <textarea id="output" placeholder="Output will appear here..." readonly></textarea>
+            <div id="outputEditor" class="editor"></div>
+            <!--textarea id="output" placeholder="Output will appear here..." readonly></textarea-->
         </div>
 
     </div>
@@ -34,11 +66,51 @@
 </div>
 
 <script>
-async function processCode() {
-    const input = document.getElementById("input").value;
+let inputEditor, outputEditor;
 
-    //const res = await fetch("http://127.0.0.1:8000/process", { //-- use this for local testing
-    const res = await fetch("https://code-fixer-568v.onrender.com/process", {  //changed url to render deplyed server address
+// Monaco init
+require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@latest/min/vs' }});
+
+require(['vs/editor/editor.main'], function () {
+
+    inputEditor = monaco.editor.create(document.getElementById('inputEditor'), {
+        value: "// Paste your code here",
+        language: "javascript",
+        theme: "vs"
+    });
+
+    outputEditor = monaco.editor.create(document.getElementById('outputEditor'), {
+        value: "// Output will appear here",
+        language: "javascript",
+        theme: "vs",
+        readOnly: true
+    });
+
+});
+
+// Change theme of editor.
+let isDark = true;
+
+function toggleTheme() {
+    isDark = !isDark;
+
+    const theme = isDark ? "vs-dark" : "vs";
+    monaco.editor.setTheme(theme);
+
+    // optional: body background bhi change
+    //document.body.style.background = isDark ? "#1e1e1e" : "#f5f6f8";
+}
+
+// Existing function (modified)
+async function processCode() {
+
+    const input = inputEditor.getValue();  // ✅ change here
+    if (!inputEditor) {
+        alert("Editor not loaded yet");
+        return;
+    }
+
+    const res = await fetch("https://code-fixer-568v.onrender.com/process", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -47,7 +119,8 @@ async function processCode() {
     });
 
     const data = await res.json();
-    document.getElementById("output").value = data.fixed_code;
+
+    outputEditor.setValue(data.fixed_code);  // ✅ change here
 }
 </script>
 
