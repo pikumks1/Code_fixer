@@ -17,6 +17,9 @@ def fix_content(content):
             var_block = match.group(3)
             # Clean: Remove 'var' and ';'
             clean_block = re.sub(r"^\s*var\s+", "", var_block).rstrip(';').strip()
+            
+            # It removes everything inside ( ) so commas in function calls don't cause wrong splits
+            clean_block = re.sub(r'\(.*?\)', '', clean_block)
 
             #print (f"Processing var block: '{clean_block}'")
             
@@ -29,9 +32,12 @@ def fix_content(content):
                 # 2. FIX: Handle typed variables (qty:Number -> qty)
                 name = name_part.split(':')[0].strip()
 
-                if name and name not in found_variables:
-                    # Append in order of appearance
-                    found_variables.append(name)
+                # 3. CHANGE HERE: Validate that 'name' is a proper variable identifier
+                # This skips "Inp", "TEST_LOV", or anything with quotes/brackets
+                if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', name):
+                    if name and name not in found_variables:
+                        # Append in order of appearance
+                        found_variables.append(name)
 
     # 3. REVERSE the list for Bottom-Up nullification
     all_vars = found_variables[::-1]

@@ -33,6 +33,14 @@ assign python 3.11 : py -3.11
         git branch -M main
         git push -u origin main
 
+        **************
+        Git Pull >> git pull origin main
+        Git Push >>
+            git add .
+            git commit -m "update"
+            git push
+        **************
+
 ** Creating Index.html to create a web page.
 run:
 code index.html >> vs code me (live server extension required to install)
