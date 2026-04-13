@@ -37,7 +37,7 @@
 async function processCode() {
     const input = document.getElementById("input").value;
 
-    //const res = await fetch("http://127.0.0.1:8000/process", { -- use this for local testing
+    //const res = await fetch("http://127.0.0.1:8000/process", { //-- use this for local testing
     const res = await fetch("https://your-backend.onrender.com/process", {
         method: "POST",
         headers: {
