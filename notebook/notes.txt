@@ -42,3 +42,6 @@ pyhon se host krne k liye >> python -m http.server 5500
 
 ** extras
 1. python -m uvicorn main:app --reload >> Uvicorn ek server hai jo tumhara FastAPI app run karta hai
+
+2. vercel me html and css deploy kiya hu (frontend)
+3. render me pyhton deploy kiya h, or dono api se linked hai
