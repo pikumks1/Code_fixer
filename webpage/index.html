@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Code Fixer</title>
+    <title>Siebel Script Optimizer</title>
     <!--link rel="stylesheet" href="style.css"> <!--for local testing -->
     <link rel="stylesheet" href="webpage/style.css"> <!-- chnaged to deploy on vercel -->
     <!-- Monaco CDN -->
@@ -12,31 +12,24 @@
 
 <div class="container">
 
-    <h2>Code Fixer Tool</h2>
+    <!--h2>Siebel Script Optimizer</h2-->
 
-    <div class="header-bar">
-    <div class="left">
-        <span class="logo">CodeFixer</span>
-        <!-- <span class="menu active">Text</span>
-        <span class="menu">Images</span>
-        <span class="menu">Documents</span> -->
-    </div>
+    <div class="top-navbar">
+        <div class="nav-left">
+            <div class="brand-logo">⚡</div>
+            <div class="brand-text">Siebel Script Enhancer</div>
+        </div>
 
-    <div class="right">
-        <!--button onclick="toggleTheme()" class="theme-btn">🌙</button-->
-        <button onclick="toggleTheme()" class="theme-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-        </button>
+        <div class="nav-center">
+            <a href="#" class="nav-link active">Home</a>
+            <a href="#" class="nav-link">Features</a>
+            <a href="#" class="nav-link">Docs</a>
+            <a href="#" class="nav-link">Contact</a>
+        </div>
+
+        <div class="nav-right">
+            <button onclick="toggleTheme()" class="theme-toggle-btn">☀</button>
+        </div>
     </div>
 
     </div>
@@ -50,10 +43,24 @@
 
     </div>
 
+
     <div class="button-container">
         <button onclick="processCode()">Fix Code</button>
     </div>
 
+    <div class="footer-description">
+        <h3>About This Tool</h3>
+        <p>
+            Siebel Script Enhancer helps developers analyze, clean, and improve Siebel eScript / JavaScript code.
+            It compares original and modified code side-by-side, highlights changes, and applies automated fixes
+            to improve readability, consistency, and overall code quality.
+            <p>
+            1. Automatically nullifies declared variables that are not released in the finally block.
+            2. Reorders variable declarations in bottom-to-top sequence.
+            3. Adds missing try, catch, or finally blocks wherever required.
+            </p>
+        </p>
+    </div>
 </div>
 
 <script>
