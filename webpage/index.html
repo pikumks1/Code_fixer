@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Siebel Script Optimizer</title>
-    <!--link rel="stylesheet" href="style.css"> <!--for local testing -->
+    <link rel="stylesheet" href="style.css"> <!--for local testing -->
     <link rel="stylesheet" href="webpage/style.css"> <!-- chnaged to deploy on vercel -->
     <!-- Monaco CDN -->
     <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
@@ -28,7 +28,7 @@
         </div>
 
         <div class="nav-right">
-            <button onclick="beautifyCode() ">Beautify</button>
+            <button onclick="beautifyCode()" class="beautify-btn">Beautify</button>
             <button onclick="toggleTheme()" class="theme-toggle-btn">☀</button>
         </div>
     </div>
@@ -95,7 +95,7 @@ require(['vs/editor/editor.main'], function () {
     });
 
     diffEditor.getOriginalEditor().updateOptions({ readOnly: false });
-    diffEditor.getModifiedEditor().updateOptions({ readOnly: true });
+    diffEditor.getModifiedEditor().updateOptions({ readOnly: false });
 
 });
 
@@ -117,7 +117,7 @@ async function processCode() {
 
     const originalCode = diffEditor.getModel().original.getValue();
 
-    const res = await fetch("https://code-fixer-568v.onrender.com/process", {
+    const res = await fetch("https://code-fixer-568v.onrender.com/process", { //http://127.0.0.1:8000/process for local testing,, and start python machine uvicorn for live, https://code-fixer-568v.onrender.com/process
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -129,6 +129,14 @@ async function processCode() {
 
     diffEditor.getModel().modified.setValue(data.fixed_code);
 }
+
+async function beautifyCode() {
+    const editor = diffEditor.getModifiedEditor();
+    editor.focus();
+
+    await editor.getAction('editor.action.formatDocument').run();
+}
+
 </script>
 
 </body>

@@ -2,6 +2,8 @@
 import os
 import re
 
+import jsbeautifier
+
 def fix_content(content):
     # The Regex: 
     # Group 1: Matches // comments
@@ -200,7 +202,7 @@ for filename in os.listdir(input_folder):
             data = f.read()
         
         fixed_data = fix_content(data)
-        
+        ##fixed_data = jsbeautifier.beautify(fixed_data)  # Beautify the final output for better readability
         with open(os.path.join(output_folder, filename), "w") as f:
             f.write(fixed_data)
 

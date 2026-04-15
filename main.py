@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.codefixer import fix_content
+import jsbeautifier
 
 app = FastAPI()
 
@@ -23,6 +24,7 @@ class CodeRequest(BaseModel):
 def process_code(req: CodeRequest):
     #print(req.code) -- to debug input
     result = fix_content(req.code)
+    ##result = jsbeautifier.beautify(result)
     return {"fixed_code": result}
 
 

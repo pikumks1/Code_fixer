@@ -41,6 +41,9 @@ assign python 3.11 : py -3.11
             git push
         **************
 
+6. to install pip
+    >> pip install jsbeautifier
+
 ** Creating Index.html to create a web page.
 run:
 code index.html >> vs code me (live server extension required to install)

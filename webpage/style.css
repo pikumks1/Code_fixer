@@ -259,3 +259,25 @@ textarea:focus {
     border-top: 1px solid rgba(0,0,0,0.08);
     backdrop-filter: blur(10px);
 }
+
+/* code beautify button styles */
+.beautify-btn {
+    border: none;
+    background: transparent;
+    color: #4b5563;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.beautify-btn:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.beautify-btn:active {
+    background: #e5e7eb;
+}
