@@ -28,4 +28,4 @@ def process_code(req: CodeRequest):
 
 # 👉 Optional: local testing (terminal se)
 if __name__ == "__main__":
-    print(fix_content("var a = 10;"))
+    print(fix_content("var a = 10; testing code."))

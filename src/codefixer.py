@@ -42,6 +42,33 @@ def fix_content(content):
     # 3. REVERSE the list for Bottom-Up nullification
     all_vars = found_variables[::-1]
 
+    # --- NAYA LOGIC: Usage Check After Finally Block ---
+    # Sabse pehle identify karte hain ki function body mein finally kahan khatam ho raha hai
+    body_match = re.search(r"(\{)(.*)(\})", content, re.DOTALL)
+    if not body_match:
+        return content
+    
+    inner_body = body_match.group(2)
+    
+    # Search for an existing finally block to see if there is code after it
+    existing_finally = re.search(r"finally\s*\{.*?\}", inner_body, re.DOTALL)
+    
+    if existing_finally:
+        # Finally block ke khatam hone ke baad ka code
+        post_finally_code = inner_body[existing_finally.end():]
+        # Comments hatao taaki false match na ho
+        clean_post_code = re.sub(r"(//.*)|(/\*[\s\S]*?\*/)", "", post_finally_code)
+        
+        filtered_vars = []
+        for v in all_vars:
+            # Check if variable is used in the remaining code
+            if not re.search(rf"\b{re.escape(v)}\b", clean_post_code):
+                filtered_vars.append(v)
+            else:
+                print(f"Skipping {v}: Found usage after finally block.")
+        all_vars = filtered_vars
+    # --- End of Naya Logic ---
+
     print(f"Found variables (Bottom-Up order): {all_vars}")
 
     

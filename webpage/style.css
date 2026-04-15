@@ -73,6 +73,7 @@ textarea:focus {
 .button-container {
     text-align: center;
     margin-top: 24px;
+    padding-right: 60px;
 }
 
 .button-container button {

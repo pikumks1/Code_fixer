@@ -9,10 +9,12 @@ function UpdateAccount() {
     /*var m1 = 10, m2, m3=20, m4="", m5 = null;*/
     var n1 = 10; /*n3=20, n4="", n5 = null;*/ var n6="20";
     var o1 = 10; //no=20=null;
+    var a_1, a_2;
+    var a_3;
 
         //var psInputs = ""; var psOutputs = "";
 var lov = TheApplication().InvokeMethod("LookupValue","TEST_LOV","TEST_LOV1");
-var testBSInv = vcReadFile.InvokeMethod("ReadEAIMsg", psInputs, psOutputs);
+                var testBSInv = vcReadFile.InvokeMethod("ReadEAIMsg", psInputs, psOutputs);
 if (var i=0; i>10; i++)
     
     try {
@@ -28,5 +30,6 @@ if (var i=0; i>10; i++)
         x=null;
         
     }
+    testBSInv(a_1, a_2);
     return o1;
 }

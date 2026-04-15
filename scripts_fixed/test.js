@@ -9,6 +9,14 @@ function UpdateAccount() {
     /*var m1 = 10, m2, m3=20, m4="", m5 = null;*/
     var n1 = 10; /*n3=20, n4="", n5 = null;*/ var n6="20";
     var o1 = 10; //no=20=null;
+    var a_1, a_2;
+    var a_3;
+
+        //var psInputs = ""; var psOutputs = "";
+var lov = TheApplication().InvokeMethod("LookupValue","TEST_LOV","TEST_LOV1");
+                var testBSInv = vcReadFile.InvokeMethod("ReadEAIMsg", psInputs, psOutputs);
+if (var i=0; i>10; i++)
+    
     try {
         var x="";
         var x="", y="12", z="", a="";
@@ -27,7 +35,9 @@ function UpdateAccount() {
         if(defined(z)) z = null;
         if(defined(y)) y = null;
         if(defined(x)) x = null;
-        if(defined(o1)) o1 = null;
+        if(defined(i)) i = null;
+        if(defined(lov)) lov = null;
+        if(defined(a_3)) a_3 = null;
         if(defined(n6)) n6 = null;
         if(defined(n1)) n1 = null;
         if(defined(item2)) item2 = null;
@@ -40,5 +50,6 @@ function UpdateAccount() {
         if(defined(bcAcc)) bcAcc = null;
         if(defined(boAcc)) boAcc = null;
     }
+    testBSInv(a_1, a_2);
     return o1;
 }
