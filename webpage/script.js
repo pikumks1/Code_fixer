@@ -100,7 +100,11 @@ async function beautifyCode1() {
 // Toggle the Settings Modal
 function toggleBeautifySettings() {
     const modal = document.getElementById("beautifyModal");
-    modal.style.display = modal.style.display === "none" ? "flex" : "none";
+    if (modal.style.display === "flex") {
+        modal.style.display = "none";
+    } else {
+        modal.style.display = "flex";
+    }
 }
 
 // Basic Auto-Semicolon (ASI) logic for common Siebel/JS lines
@@ -382,4 +386,93 @@ function handleFileUpload(event) {
     
     // Input ko clear kar do taaki same file dobara select ho sake
     event.target.value = '';
+}
+
+// --- Robust Full Screen Logic ---
+function toggleFullScreen() {
+    const elem = document.documentElement;
+    
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+        // Enter full screen
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            elem.msRequestFullscreen();
+        }
+    } else {
+        // Exit full screen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+            document.msExitFullscreen();
+        }
+    }
+}
+
+
+// --- Phase 1: Analytical Engine ---
+/*async function analyzeCode() {
+    const code = diffEditor.getOriginalEditor().getValue();
+    const panel = document.getElementById("analysisPanel");
+    const list = document.getElementById("analysisList");
+    const loader = document.getElementById("loaderOverlay"); // Global loader use karenge
+
+    if (!code || code.trim().length < 10) {
+        alert("Please provide a valid eScript for AI analysis.");
+        return;
+    }
+
+    // Show loading state in terminal
+    panel.style.display = "block";
+    list.innerHTML = `<li class="analysis-item info-item">🚀 AI is reviewing your code logic... Please wait.</li>`;
+    
+    try {
+        // Hum aapke existing backend ko call karenge with a special prompt/instruction
+        const res = await fetch("https://code-fixer-568v.onrender.com/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                code: code,
+                mode: "analyze" // Agar backend support kare toh mode bhej sakte hain
+            })
+        });
+
+        const data = await res.json();
+        
+        // Agar backend suggestions de raha hai (assuming 'suggestions' array in response)
+        // Agar backend fixed_code hi de raha hai, toh hum AI se 'Review Comments' maangenge
+        if (data.suggestions && data.suggestions.length > 0) {
+            list.innerHTML = data.suggestions.map(msg => 
+                `<li class="analysis-item info-item">💡 ${msg}</li>`
+            ).join("");
+        } else {
+            list.innerHTML = `<li class="analysis-item info-item">✅ AI Review: Your logic appears optimal for Siebel environment. No critical flaws detected.</li>`;
+        }
+
+    } catch (error) {
+        list.innerHTML = `<li class="analysis-item error-item">❌ AI Connection Failed. Please check your network or API status.</li>`;
+    }
+}
+//analysis close karne ke liye simple function
+function closeAnalysis() {
+    const panel = document.getElementById("analysisPanel");
+    if (panel) {
+        panel.style.setProperty('display', 'none', 'important');
+    }
+}
+
+*/
+
+// Toggle the Help Modal
+function toggleHelpModal() {
+    const modal = document.getElementById("helpModal");
+    if (modal.style.display === "flex") {
+        modal.style.display = "none";
+    } else {
+        modal.style.display = "flex"; // Block ki jagah Flex use karein
+    }
 }
