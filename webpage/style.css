@@ -13,6 +13,28 @@ h2 {
     margin-bottom: 20px;
 }
 
+/* Monaco editor wrapper */
+.editor {
+    height: 520px; /* Monaco ko strict height chahiye render hone ke liye */
+    width: 100%;
+    background: #ffffff;
+    position: relative;
+    border-top: 1px solid #e0e0e0; /* Header se separate karne ke liye */
+    flex: 1; /* Ye bachi hui sari space le lega */
+    min-height: 520px;
+    width: 100%;
+    background: #ffffff;
+    position: relative; /* Monaco requires this to calculate boundaries properly */
+    overflow: hidden;
+}
+/* Side by side spacing */
+.editor-container {
+    display: flex;
+    gap: 22px;
+    margin-top: 24px;
+    align-items: stretch;
+}
+
 /* Editor container */
 .editor-box {
     flex: 1;
@@ -25,20 +47,72 @@ h2 {
     transition: all 0.25s ease;
 }
 
-/* Header of editor */
-.editor-box .header {
-    padding: 14px 18px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #111827;
-    background: linear-gradient(135deg, #f8fafc, #eef2ff);
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-    letter-spacing: 0.3px;
+/* --- Editor Bottom Footer Styles --- */
+.editor-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px;
+    background: #f8fafc; /* Subtle greyish background */
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 18px 18px; /* Match editor-box bottom radius */
 }
 
-.editor-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 18px 36px rgba(0,0,0,0.12);
+.footer-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.footer-left .status-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.5px;
+}
+
+/* Header of editor */
+/* --- Editor Actions Toolbar --- */
+.editor-box .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.action-btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    color: #111827;
+}
+
+.action-btn svg {
+    margin-right: 4px; /* Icon aur text ke beech thoda space */
+    stroke: #4f46e5; /* Icon ka color theme ke hisaab se */
+    transition: transform 0.2s ease;
+}
+
+/* Hover par chota sa animation */
+.action-btn:hover svg {
+    transform: scale(1.1); 
 }
 
 .editor-box {
@@ -100,20 +174,6 @@ textarea:focus {
 .button-container button:active {
     transform: translateY(0);
     box-shadow: 0 8px 16px rgba(79, 70, 229, 0.22);
-}
-
-/* Monaco editor wrapper */
-.editor {
-    height: 520px;
-    width: 100%;
-    background: #ffffff;
-}
-/* Side by side spacing */
-.editor-container {
-    display: flex;
-    gap: 22px;
-    margin-top: 24px;
-    align-items: stretch;
 }
 
 /* Footer description styles */
@@ -223,9 +283,10 @@ textarea:focus {
 .theme-toggle-btn {
     width: 40px;
     height: 40px;
+    font-size: large;
     border: none;
     border-radius: 50%;
-    background: transparent;
+    background: linear-gradient(rgb(255, 255, 255), #d0d1d2);
     color: #374151;
     cursor: pointer;
     display: flex;
@@ -280,4 +341,131 @@ textarea:focus {
 
 .beautify-btn:active {
     background: #e5e7eb;
+}
+
+/* --- Loader Overlay Styles --- */
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px); /* Glassmorphism effect */
+    z-index: 9999; /* Sabse upar dikhega */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* The Spinning Circle */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #eef2ff;
+    border-top: 5px solid #4f46e5; /* Theme color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+.loader-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4f46e5;
+    letter-spacing: 0.5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Snippet selection dropdown styles */
+.snippet-select {
+    appearance: none; /* Default arrow hatao */
+    background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%234b5563' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") no-repeat right 12px center;
+    border: 1px solid #e2e8f0;
+    color: #1f2937;
+    padding: 8px 3px 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+    min-width: 160px;
+}
+
+.snippet-select:hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+.snippet-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Styling specific to the Clear button */
+.clear-btn:hover {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
+.clear-btn:hover svg {
+    stroke: #dc2626;
+}
+
+
+/* --- Beautify Settings Modal --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.modal-content {
+    background: #ffffff;
+    width: 450px;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.modal-header h3 { margin: 0; font-size: 15px; color: #1e293b; }
+
+.close-btn {
+    background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b;
+}
+
+.settings-grid {
+    padding: 20px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+}
+
+.setting-item { display: flex; flex-direction: column; gap: 6px; }
+
+.setting-item label { font-size: 12px; font-weight: 600; color: #475569; }
+
+.setting-item select {
+    padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none;
+}
+
+.modal-footer {
+    padding: 16px 20px; border-top: 1px solid #e2e8f0; text-align: right; background: #f8fafc;
 }

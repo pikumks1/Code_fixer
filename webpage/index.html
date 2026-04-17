@@ -5,14 +5,23 @@
     <title>Siebel Script Optimizer</title>
     <link rel="stylesheet" href="style.css"> <!--for local testing -->
     <link rel="stylesheet" href="webpage/style.css"> <!-- chnaged to deploy on vercel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.11/beautify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.15.4/beautify.js"></script>
     <!-- Monaco CDN -->
     <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+    
+    <script src="script.js"></script>
+    <script src="webpage/script.js"></script>
 </head>
 <body>
 
 <div class="container">
 
     <!--h2>Siebel Script Optimizer</h2-->
+    <div id="loaderOverlay" class="loader-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <div class="loader-text">Fixing your code...</div>
+    </div>
 
     <div class="top-navbar">
         <div class="nav-left">
@@ -28,7 +37,7 @@
         </div>
 
         <div class="nav-right">
-            <button onclick="beautifyCode()" class="beautify-btn">Beautify</button>
+            <!-- <button onclick="beautifyCode()" class="beautify-btn">Beautify</button> -->
             <button onclick="toggleTheme()" class="theme-toggle-btn">☀</button>
         </div>
     </div>
@@ -38,10 +47,80 @@
     <div class="editor-container">
         
         <div class="editor-box">
-            <div class="header">Code Difference</div>
+            <div class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 18px;">
+                <span>Code Difference</span>
+                
+                <div class="editor-actions">
+                    <select id="snippetSelector" class="snippet-select" onchange="insertSnippet()">
+                        <option value="" disabled selected>⚡ Insert Snippet...</option>
+                        <option value="ErrorHandling">Error Handling</option>
+                        <option value="queryForwardOnly">Query (ForwardOnly)</option>
+                        <option value="bsMethod">Standard BS Method</option>
+                        <option value="tryCatch">Empty Try-Catch-Finally</option>
+                    </select>
+                    
+                    <button onclick="saveCustomSnippet()" class="action-btn" title="Save current code as your custom snippet">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                        snippet
+                    </button>
+                    <input type="file" id="fileUploader" accept=".js,.txt" style="display: none;" onchange="handleFileUpload(event)">
+
+                    <button onclick="document.getElementById('fileUploader').click()" class="action-btn" title="Upload a .js or .txt file">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Upload
+                    </button>
+                    <!-- <button onclick="beautifyCode()" class="action-btn" title="Format Code">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                        Beautify
+                    </button> -->
+                    <div style="display: flex; gap: 4px;">
+                        <button onclick="beautifyCode()" class="action-btn" title="Format Code">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                            Beautify
+                        </button>
+                        <button onclick="toggleBeautifySettings()" class="action-btn" style="padding: 8px;" title="Beautifier Settings">⚙️</button>
+                    </div>
+                    <button onclick="copyFixedCode()" class="action-btn" title="Copy Optimized Code">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy
+                    </button>
+                    <button onclick="downloadFixedCode()" class="action-btn" title="Download .js File">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download
+                    </button>
+                    <button onclick="clearCode()" class="action-btn clear-btn" title="Clear All Code">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Clear
+                    </button>
+                </div>
+            </div>
+            
             <div id="diffEditor" class="editor"></div>
         </div>
-
     </div>
 
 
@@ -68,76 +147,56 @@
     </div>
 </div>
 
-<script>
-let inputEditor, outputEditor;
+<div id="beautifyModal" class="modal-overlay" style="display: none;">
+    <!-- <Pop up Beautify settings div> -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Beautifier Settings</h3>
+                <button onclick="toggleBeautifySettings()" class="close-btn">✖</button>
+            </div>
+            
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>Tab Spaces:</label>
+                    <select id="opt_indent">
+                        <option value="2">2 Spaces</option>
+                        <option value="4" selected>4 Spaces</option>
+                        <option value="8">8 Spaces</option>
+                        <option value="tab">Use Tabs</option>
+                    </select>
+                </div>
 
-// Monaco init
-let diffEditor;
+                <div class="setting-item">
+                    <label>Curly Braces { } :</label>
+                    <select id="opt_braces">
+                        <option value="collapse" selected>Same Line {</option>
+                        <option value="expand">New Line \n {</option>
+                        <option value="end-expand">End Expand }</option>
+                    </select>
+                </div>
 
-require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@latest/min/vs' }});
+                <div class="setting-item">
+                    <label>Max Empty Lines:</label>
+                    <select id="opt_lines">
+                        <option value="1" selected>Keep 1 Line</option>
+                        <option value="2">Keep 2 Lines</option>
+                        <option value="0">Remove All Extra</option>
+                    </select>
+                </div>
 
-require(['vs/editor/editor.main'], function () {
+                <div class="setting-item" style="grid-column: span 2; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="opt_semicolon">
+                    <label for="opt_semicolon" style="margin: 0; cursor: pointer;">
+                        Auto-add missing Semicolons (;) <span style="color: #ef4444; font-size: 11px;">*Beta</span>
+                    </label>
+                </div>
+            </div>
 
-    diffEditor = monaco.editor.createDiffEditor(
-        document.getElementById('diffEditor'),
-        {
-            theme: "vs",
-            automaticLayout: true
-        }
-    );
-
-    const originalModel = monaco.editor.createModel("// Original code", "javascript");
-    const modifiedModel = monaco.editor.createModel("// Fixed code", "javascript");
-
-    diffEditor.setModel({
-        original: originalModel,
-        modified: modifiedModel
-    });
-
-    diffEditor.getOriginalEditor().updateOptions({ readOnly: false });
-    diffEditor.getModifiedEditor().updateOptions({ readOnly: false });
-
-});
-
-// Change theme of editor.
-let isDark = true;
-
-function toggleTheme() {
-    isDark = !isDark;
-
-    const theme = isDark ? "vs" : "vs-dark";
-    monaco.editor.setTheme(theme);
-
-    // optional: body background bhi change
-    //document.body.style.background = isDark ? "#1e1e1e" : "#f5f6f8";
-}
-
-// Existing function (modified)
-async function processCode() {
-
-    const originalCode = diffEditor.getModel().original.getValue();
-
-    const res = await fetch("https://code-fixer-568v.onrender.com/process", { //http://127.0.0.1:8000/process for local testing,, and start python machine uvicorn for live, https://code-fixer-568v.onrender.com/process
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ code: originalCode })
-    });
-
-    const data = await res.json();
-
-    diffEditor.getModel().modified.setValue(data.fixed_code);
-}
-
-async function beautifyCode() {
-    const editor = diffEditor.getModifiedEditor();
-    editor.focus();
-
-    await editor.getAction('editor.action.formatDocument').run();
-}
-
-</script>
+            <div class="modal-footer">
+                <button onclick="toggleBeautifySettings()" class="action-btn">Save Settings</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
