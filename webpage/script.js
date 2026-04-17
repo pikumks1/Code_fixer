@@ -43,6 +43,64 @@ require(['vs/editor/editor.main'], function () {
 
     // Page load hote hi dropdown generate karo
     loadSnippets();
+
+    // --- Monaco Init Block ke andar ekdum niche ye add karo ---
+
+    const fixShortcut = monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter;
+
+    // Original Editor ke liye
+    originalEditor.addCommand(fixShortcut, function() {
+        processCode();
+    });
+
+    // Modified Editor ke liye
+    modifiedEditor.addCommand(fixShortcut, function() {
+        processCode();
+    });
+
+    console.log("Shortcuts initialized inside Monaco!");
+
+    function addShortcuts(editor) {
+        
+        // 1. Ctrl + Enter -> Fix Code
+        editor.addAction({
+            id: 'fix-code-action',
+            label: 'Fix Siebel Code',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+            run: function() { processCode(); }
+        });
+
+        // 2. Ctrl + B -> Beautify
+        editor.addAction({
+            id: 'beautify-code-action',
+            label: 'Beautify Code',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB],
+            run: function() { beautifyCode(); }
+        });
+
+        // 3. Ctrl + L -> Clear
+        editor.addAction({
+            id: 'clear-code-action',
+            label: 'Clear All Editors',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL],
+            run: function() { clearCode(); }
+        });
+
+        // 4. Ctrl + Shift + C -> Copy Fixed Code 
+        // (Note: Ctrl+C standard copy ke liye rehne do, Shift add karna safe hai)
+        editor.addAction({
+            id: 'copy-fixed-action',
+            label: 'Copy Optimized Code',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC],
+            run: function() { copyFixedCode(); }
+        });
+    }
+
+    // Dono editors par apply karo
+    addShortcuts(originalEditor);
+    addShortcuts(modifiedEditor);
+
+    console.log("Monaco Shortcuts Active! 🚀");
 });
 
 // Theme configuration
@@ -476,3 +534,60 @@ function toggleHelpModal() {
         modal.style.display = "flex"; // Block ki jagah Flex use karein
     }
 }
+
+
+// --- Shortcuts: Ctrl + Enter to Fix Code ---
+const runFixAction = () => {
+    console.log("Shortcut Triggered: Fixing Code...");
+    processCode(); 
+};
+
+// Original side ke liye shortcut
+originalEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, runFixAction);
+
+// Modified side ke liye shortcut
+modifiedEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, runFixAction);
+
+// Global shortcut listener
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault(); // Browser ka default behavior roko
+        processCode();
+    }
+});
+
+// --- Universal Keyboard Shortcuts Manager ---
+window.addEventListener('keydown', function (e) {
+    // Check if Ctrl (Windows) or Cmd (Mac) is pressed
+    if (e.ctrlKey || e.metaKey) {
+        
+        const key = e.key.toLowerCase();
+
+        switch (key) {
+            case 'enter': // Ctrl + Enter -> Fix Code
+                e.preventDefault();
+                console.log("Shortcut: Process/Fix Code");
+                processCode();
+                break;
+
+            case 'b': // Ctrl + B -> Beautify
+                e.preventDefault();
+                console.log("Shortcut: Beautify Code");
+                beautifyCode();
+                break;
+
+            case 'l': // Ctrl + L -> Clear (L for Log/List Clear)
+                e.preventDefault();
+                console.log("Shortcut: Clear All");
+                clearCode();
+                break;
+
+            case 'c': // Ctrl + C -> Premium Copy (Directly copies the fixed code)
+                // Note: Standard copy will be replaced by your custom copy function
+                e.preventDefault();
+                console.log("Shortcut: Copy Fixed Code");
+                copyFixedCode();
+                break;
+        }
+    }
+}, true); // 'true' flag ensures it catches events before Monaco blocks them
