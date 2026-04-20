@@ -18,12 +18,13 @@ app.add_middleware(
 # ✅ Request body structure
 class CodeRequest(BaseModel):
     code: str
+    remove_unused: bool = False # Default: False, agar client specify nahi karta
 
 # ✅ API endpoint
 @app.post("/process")
 def process_code(req: CodeRequest):
     #print(req.code) -- to debug input
-    result = fix_content(req.code)
+    result = fix_content(req.code, req.remove_unused)
     ##result = jsbeautifier.beautify(result)
     return {"fixed_code": result}
 

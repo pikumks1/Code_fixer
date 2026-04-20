@@ -2,9 +2,11 @@
 import os
 import re
 
+from src.unusedvar import clean_modular_code
 import jsbeautifier
 
-def fix_content(content):
+def fix_content(content, remove_unused=False):
+    
     # The Regex: 
     # Group 1: Matches // comments
     # Group 2: Matches /* */ comments
@@ -43,6 +45,15 @@ def fix_content(content):
 
     # 3. REVERSE the list for Bottom-Up nullification
     all_vars = found_variables[::-1]
+
+    # ==========================================
+    # 🌟 MODULAR CLEANUP INTEGRATION
+    # ==========================================
+    if remove_unused:
+        # Humne existing code aur array dono pass kiye
+        # Ye badle mein saaf kiya hua code aur bache hue zaroori variables wapas dega
+        content, all_vars = clean_modular_code(content, all_vars)
+
 
     # --- NAYA LOGIC: Usage Check After Finally Block ---
     # Sabse pehle identify karte hain ki function body mein finally kahan khatam ho raha hai

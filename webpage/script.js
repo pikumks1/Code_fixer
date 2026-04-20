@@ -44,8 +44,7 @@ require(['vs/editor/editor.main'], function () {
     // Page load hote hi dropdown generate karo
     loadSnippets();
 
-    // --- Monaco Init Block ke andar ekdum niche ye add karo ---
-
+    
     const fixShortcut = monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter;
 
     // Original Editor ke liye
@@ -120,13 +119,16 @@ async function processCode() {
     // Display the loading indicator during the API call
     loader.style.display = "flex";
 
+    const isRemoveChecked = document.getElementById("opt_remove_unused").checked;
+    console.log("Frontend Bhej Raha Hai: remove_unused =", isRemoveChecked); // Console(F12) mein dekho
+
     try {
-        const res = await fetch("https://code-fixer-568v.onrender.com/process", {
+        const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ code: originalCode })
+            body: JSON.stringify({ code: originalCode, remove_unused: isRemoveChecked })
         });
 
         if (!res.ok) {

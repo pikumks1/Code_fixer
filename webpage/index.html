@@ -4,54 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>Siebel Script Enhancer Pro | Ultimate eScript & JS Beautifier | HERO Team</title>
-    <meta name="title" content="Siebel Script Enhancer Pro | Ultimate eScript & JS Beautifier">
-    <meta name="description" content="The #1 Online Siebel eScript Optimizer & Beautifier. Fix memory leaks, reorder variables, and automate Try-Catch-Finally blocks instantly. Designed for professional Oracle Siebel CRM developers.">
-    <meta name="keywords" content="Siebel Script Enhancer, Siebel eScript Beautifier, Siebel Code Optimizer, Oracle Siebel CRM Development, JavaScript Beautifier Online, Siebel Script Editor, eScript Best Practices, Siebel Automation Tools, Code Refactoring Siebel, Manish Kumar Singh, HERO Team">
+    <title>Siebel Code Editor & Script Formatter Online | Enhancer Pro</title>
+    <meta name="title" content="Siebel Code Editor & Script Formatter Online | Enhancer Pro">
+    
+    <meta name="description" content="Free online Siebel Code Editor and Script Formatter. Write, beautify, and optimize Oracle Siebel eScript instantly. Best Siebel code writer for developers.">
+    
+    <meta name="keywords" content="siebel code editor, siebel script formatter, siebel code writer, siebel escript editor, online siebel formatter, Oracle Siebel CRM tools, HERO Team">
     <meta name="author" content="Manish Kumar Singh - HERO Team">
     <meta name="robots" content="index, follow">
 
+    <link rel="canonical" href="https://your-domain.vercel.app/">
+
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://your-domain.vercel.app/">
-    <meta property="og:title" content="Siebel Script Enhancer Pro | Advanced eScript Optimizer">
-    <meta property="og:description" content="Boost your Siebel development productivity. Beautify, Fix, and Enhance your scripts with AI-powered logic. Built for professionals.">
-    <meta property="og:image" content="https://your-domain.vercel.app/og-image.png"> <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="Siebel Script Enhancer Pro | eScript Optimizer">
-    <meta property="twitter:description" content="Stop wasting time on manual script formatting. Use Siebel Script Enhancer Pro for clean, optimized code.">
+    <meta property="og:title" content="Siebel Code Editor & Script Formatter">
+    <meta property="og:description" content="Boost your Siebel development productivity. Write, format, and enhance your eScripts with our online Siebel code editor.">
+    <meta property="og:image" content="https://your-domain.vercel.app/og-image.png"> 
+    
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Siebel Code Editor & Formatter">
+    <meta property="twitter:description" content="Stop wasting time on manual script formatting. Use this online Siebel code editor for clean, optimized code.">
 
     <meta name="theme-color" content="#6366f1">
 
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css"> <!--for local testing -->
-    <link rel="stylesheet" href="webpage/style.css"> <!-- chnaged to deploy on vercel -->
+    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="webpage/style.css"> 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.11/beautify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.15.4/beautify.js"></script>
-    <!-- Monaco CDN -->
     <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
     
     <script src="script.js"></script>
     <script src="webpage/script.js"></script>
+    
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "Siebel Script Enhancer Pro",
+      "name": "Siebel Code Editor & Script Formatter",
       "operatingSystem": "Web Browser",
       "applicationCategory": "DeveloperApplication",
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "INR"
       },
+      "description": "An online Siebel code editor and script formatter for Oracle Siebel CRM developers.",
       "featureList": [
-        "eScript Beautifier",
+        "Siebel Code Editor",
+        "Siebel Script Formatter",
         "Variable Nullification Fix",
         "Automatic Try-Catch Insertion",
-        "Code Comparison Side-by-Side",
         "JavaScript Formatting"
       ]
     }
@@ -280,6 +287,12 @@
 
     <div class="button-container">
         <button onclick="processCode()">Fix Code</button>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px;">
+        <input type="checkbox" id="opt_remove_unused" checked style="cursor: pointer; width: 14px; height: 14px; accent-color: #6366f1;">
+        <label for="opt_remove_unused" style="cursor: pointer; font-size: 13px; font-weight: 500; color: #475569; user-select: none;">
+            Remove Unused Variables <span style="font-size: 11px; color: #94a3b8; font-weight: normal;">(Advanced)</span>
+        </label>
     </div>
 
     <div class="footer-description">
