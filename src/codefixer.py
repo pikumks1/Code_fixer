@@ -146,7 +146,8 @@ def fix_content(content, remove_unused=False):
 
     
     if not all_vars:
-        return content
+        raise ValueError("No variables found to nullify in this code!")
+        #return content
     
     # Generate the nullifying statements for the finally block
     nullify_logic = "".join([f"\n        if(defined({v})) {v} = null;" for v in all_vars])
