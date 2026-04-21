@@ -27,6 +27,46 @@ def extract_continue_operation(body_text):
 
 def fix_content(content, remove_unused=False):
     
+       # Identify the function body (content between the first { and last })
+    body_match = re.search(r"(\{)(.*)(\})", content, re.DOTALL)
+    if not body_match:
+        return content
+    
+    # 1. Create a version of the body with ALL comments removed for searching
+    # This removes // single-line and /* multi-line */ comments
+    clean_body_for_search = re.sub(r"(//.*)|(/\*[\s\S]*?\*/)", "", body_match.group(2))
+
+    #print(f"Clean body for search: {clean_body_for_search}")
+
+    # 2. Use word boundaries (\b) to find and count active keywords
+    try_matches = re.findall(r"\btry\b", clean_body_for_search)
+    catch_matches = re.findall(r"\bcatch\b", clean_body_for_search)
+    finally_matches = re.findall(r"\bfinally\b", clean_body_for_search)
+
+    # 3. Get the counts
+    try_count = len(try_matches)
+    catch_count = len(catch_matches)
+    finally_count = len(finally_matches)
+
+    # 4. Set your flags based on the counts
+    has_try = try_count > 0
+    has_catch = catch_count > 0
+    has_finally = finally_count > 0
+
+    print(f"Blocks found -> Try: {try_count}, Catch: {catch_count}, Finally: {finally_count}")
+    
+    if try_count > 1 or catch_count > 1 or finally_count > 1:
+        # Yeh message aapki website ke frontend par bheja ja sakta hai
+        raise ValueError("Multiple try/catch/finally blocks detected! Please fix manually.")
+        #breakpoint() -- dubugging k case me lagana h
+
+        # NAYI LINE:
+        #from fastapi import HTTPException
+        #raise HTTPException(status_code=400, detail="Multiple try/catch/finally blocks detected! Please fix manually.")
+    
+    
+    
+    
     # The Regex: 
     # Group 1: Matches // comments
     # Group 2: Matches /* */ comments
@@ -111,41 +151,7 @@ def fix_content(content, remove_unused=False):
     # Generate the nullifying statements for the finally block
     nullify_logic = "".join([f"\n        if(defined({v})) {v} = null;" for v in all_vars])
     
-    # Identify the function body (content between the first { and last })
-    body_match = re.search(r"(\{)(.*)(\})", content, re.DOTALL)
-    if not body_match:
-        return content
-    
-    
-    
-    # 1. Create a version of the body with ALL comments removed for searching
-    # This removes // single-line and /* multi-line */ comments
-    clean_body_for_search = re.sub(r"(//.*)|(/\*[\s\S]*?\*/)", "", body_match.group(2))
-
-    #print(f"Clean body for search: {clean_body_for_search}")
-
-    # 2. Use word boundaries (\b) to find and count active keywords
-    try_matches = re.findall(r"\btry\b", clean_body_for_search)
-    catch_matches = re.findall(r"\bcatch\b", clean_body_for_search)
-    finally_matches = re.findall(r"\bfinally\b", clean_body_for_search)
-
-    # 3. Get the counts
-    try_count = len(try_matches)
-    catch_count = len(catch_matches)
-    finally_count = len(finally_matches)
-
-    # 4. Set your flags based on the counts
-    has_try = try_count > 0
-    has_catch = catch_count > 0
-    has_finally = finally_count > 0
-
-    print(f"Blocks found -> Try: {try_count}, Catch: {catch_count}, Finally: {finally_count}")
-    
-    if try_count > 1 or catch_count > 1 or finally_count > 1:
-        # Yeh message aapki website ke frontend par bheja ja sakta hai
-        raise ValueError("Multiple try blocks detected! Please fix manually.")
-        #breakpoint() -- dubugging k case me lagana h
-    
+ ## removed code and moved to top.
 
     opening, inner_body, closing = body_match.groups()
     stripped_body = inner_body.strip()

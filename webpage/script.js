@@ -126,8 +126,8 @@ async function processCode() {
     console.log("Frontend Bhej Raha Hai: remove_comments =", isRemoveCommentChecked); // Console(F12) mein dekho
 
     try {
-        //const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
-        const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
+        const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
+        //const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -140,22 +140,31 @@ async function processCode() {
         });
 
         if (!res.ok) {
-            throw new Error(`Server responded with status: ${res.status}`);
+            try {
+                // Yahan dhyan dena, ye 'res.json()' hai, 'response.json()' nahi!
+                const errorData = await res.json();
+                showToast("⚠️ " + (errorData.detail || "Server error occurred."));
+            } catch (parseErr) {
+                console.error("Failed to parse error JSON:", parseErr);
+                showToast(`⚠️ Server error: ${res.status}`);
+            }
+            return; // 🚨 Yahan return lagana zaroori hai taaki aage ka success code na chale!
         }
 
         const data = await res.json();
         
         // Populate the modified editor with the optimized code
         diffEditor.getModel().modified.setValue(data.fixed_code);
+        showToast("Code optimized successfully!");
 
     } catch (error) {
         console.error("API Connection Failed:", error);
-        alert("Unable to connect to the optimization server. Please check your network connection or review the console logs for details.");
+        showToast("❌ Failed to process code. Check connection or backend.");
+        //alert("Unable to connect to the optimization server. Please check your network connection or review the console logs for details.");
     } finally {
         // Ensure the loading overlay is dismissed regardless of the outcome
         loader.style.display = "none";
     }
-    showToast("Code optimized successfully!"); // Toast for feedback
 }
 
 // Code formatting utility utilizing Monaco's built-in actions

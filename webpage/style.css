@@ -635,7 +635,7 @@ textarea:focus {
 
 /* Modern Toast Banner Style */
 .toast-banner {
-    background: #1e293b; /* Dark theme banner */
+    background: #3a3e43; /* Dark theme banner */
     color: #f8fafc;
     padding: 12px 20px;
     border-radius: 8px;
