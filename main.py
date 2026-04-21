@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.codefixer import fix_content
+from src.comment_remover import remove_all_comments
 import jsbeautifier
 
 app = FastAPI()
@@ -19,13 +20,19 @@ app.add_middleware(
 class CodeRequest(BaseModel):
     code: str
     remove_unused: bool = False # Default: False, agar client specify nahi karta
+    remove_comments: bool = False 
 
 # ✅ API endpoint
 @app.post("/process")
 def process_code(req: CodeRequest):
-    #print(req.code) -- to debug input
+    # 1. Pehle Original Fixer chalao
     result = fix_content(req.code, req.remove_unused)
-    ##result = jsbeautifier.beautify(result)
+    
+    # 2. Agar user ne Comments remove karne ko bola hai
+    if req.remove_comments:
+        result = remove_all_comments(result)
+        
+
     return {"fixed_code": result}
 
 

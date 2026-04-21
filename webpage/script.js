@@ -122,13 +122,21 @@ async function processCode() {
     const isRemoveChecked = document.getElementById("opt_remove_unused").checked;
     console.log("Frontend Bhej Raha Hai: remove_unused =", isRemoveChecked); // Console(F12) mein dekho
 
+    const isRemoveCommentChecked = document.getElementById("opt_remove_comment").checked;
+    console.log("Frontend Bhej Raha Hai: remove_comments =", isRemoveCommentChecked); // Console(F12) mein dekho
+
     try {
-        const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
+        const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
+        //const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ code: originalCode, remove_unused: isRemoveChecked })
+            body: JSON.stringify({
+                 code: originalCode, 
+                 remove_unused: isRemoveChecked, 
+                 remove_comments: isRemoveCommentChecked 
+                }) // API ko extra info bhej rahe hain ki kya remove karna hai
         });
 
         if (!res.ok) {
@@ -147,6 +155,7 @@ async function processCode() {
         // Ensure the loading overlay is dismissed regardless of the outcome
         loader.style.display = "none";
     }
+    showToast("Code optimized successfully!"); // Toast for feedback
 }
 
 // Code formatting utility utilizing Monaco's built-in actions
@@ -215,6 +224,7 @@ function beautifyCode() {
     if (modCode && !modCode.includes("Optimized code will")) {
         modifiedEditor.setValue(js_beautify(modCode, formatOptions));
     }
+    showToast("Code beautified with your settings!"); // Toast for feedback
 }
 
 // Clears the editors and resets them to their default placeholder states
@@ -234,15 +244,21 @@ async function copyFixedCode() {
         
         // Prevent copying empty or placeholder text
         if (!fixedCode || fixedCode.includes("Optimized code will appear here")) {
-            alert("Please fix the code first before copying.");
+            // Alert ki jagah Toast use kiya
+            showToast("⚠️ Please fix the code first before copying."); 
             return;
         }
         
+        // Asli copy command (Sirf ek baar)
         await navigator.clipboard.writeText(fixedCode);
-        alert("Code copied to clipboard!");
+        
+        // Copy success hone par Toast dikhao
+        showToast("Code copied to clipboard!");
+        
     } catch (error) {
         console.error("Clipboard copy operation failed:", error);
-        alert("Failed to copy code. Please check your browser's clipboard permissions.");
+        // Error aane par bhi Toast dikhao
+        showToast("❌ Failed to copy code. Check clipboard permissions.");
     }
 }
 
@@ -593,3 +609,37 @@ window.addEventListener('keydown', function (e) {
         }
     }
 }, true); // 'true' flag ensures it catches events before Monaco blocks them
+
+
+// ==========================================
+// TOAST NOTIFICATION SYSTEM
+// ==========================================
+function showToast(message) {
+    // 1. Check karo ki container hai ya nahi, nahi toh khud bana lo
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    // 2. Naya banner banao
+    const toast = document.createElement('div');
+    toast.className = 'toast-banner';
+    
+    // 3. SVG Icon aur Message set karo
+    toast.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        ${message}
+    `;
+    
+    // 4. Banner ko screen par dikhao
+    container.appendChild(toast);
+    
+    // 5. Theek 3 second (3000ms) baad banner ko uda do
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}

@@ -160,7 +160,7 @@
                                     <span style="margin-left:8px; color:#64748b;">Beautify Code</span>
                                 </div>
                                 <div style="font-size: 13px;">
-                                    <kbd style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-family: monospace;">Ctrl + M</kbd>
+                                    <kbd style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-family: monospace;">Ctrl + Shift + C</kbd>
                                     <span style="margin-left:8px; color:#64748b;">Copy Fixed Code</span>
                                 </div>
                                 <div style="font-size: 13px;">
@@ -289,9 +289,13 @@
         <button onclick="processCode()">Fix Code</button>
     </div>
     <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px;">
-        <input type="checkbox" id="opt_remove_unused" checked style="cursor: pointer; width: 14px; height: 14px; accent-color: #6366f1;">
+        <input type="checkbox" id="opt_remove_unused" style="cursor: pointer; width: 14px; height: 14px; accent-color: #6366f1;">
         <label for="opt_remove_unused" style="cursor: pointer; font-size: 13px; font-weight: 500; color: #475569; user-select: none;">
             Remove Unused Variables <span style="font-size: 11px; color: #94a3b8; font-weight: normal;">(Advanced)</span>
+        </label>
+        <input type="checkbox" id="opt_remove_comment" style="cursor: pointer; width: 14px; height: 14px; accent-color: #6366f1;">
+        <label for="opt_remove_comment" style="cursor: pointer; font-size: 13px; font-weight: 500; color: #475569; user-select: none;">
+            Remove Comments <span style="font-size: 11px; color: #94a3b8; font-weight: normal;">(Advanced)</span>
         </label>
     </div>
 
@@ -375,6 +379,8 @@
             </div>
         </div>
     </div>
+
+    <div id="toast-container"></div>
 
 </body>
 </html>

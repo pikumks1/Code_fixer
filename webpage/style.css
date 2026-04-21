@@ -620,3 +620,45 @@ textarea:focus {
     font-size: 18px;
     box-shadow: 0 8px 18px rgba(79,70,229,0.25);
 }
+
+/* Toast Notification Styles */
+/* Toast Container Positioning */
+#toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Modern Toast Banner Style */
+.toast-banner {
+    background: #1e293b; /* Dark theme banner */
+    color: #f8fafc;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-left: 4px solid #6366f1; /* Aapka brand color */
+    
+    /* Animations: slideIn (0.3s) aur fadeOut (0.3s delay ke baad) */
+    animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease forwards 2.7s;
+}
+
+/* Slide in from right */
+@keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Slide out to right */
+@keyframes fadeOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(120%); opacity: 0; }
+}
