@@ -126,8 +126,8 @@ async function processCode() {
     console.log("Frontend Bhej Raha Hai: remove_comments =", isRemoveCommentChecked); // Console(F12) mein dekho
 
     try {
-        //const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
-        const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
+        const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
+        //const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

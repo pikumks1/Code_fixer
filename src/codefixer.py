@@ -5,6 +5,26 @@ import re
 from src.unusedvar import clean_modular_code
 import jsbeautifier
 
+def extract_continue_operation(body_text):
+    """
+    Sirf aakhiri 'return(ContinueOperation);' ko code se alag karta hai.
+    Return karega: (Code_Without_Return, Extracted_Return_String)
+    """
+    # Regex STRICTLY sirf ContinueOperation ke liye hai. CancelOperation ignore hoga.
+    pattern = r"(return\s*\(?\s*ContinueOperation\s*\)?\s*;?(?:\s|//.*|/\*[\s\S]*?\*/)*)$"
+    
+    match = re.search(pattern, body_text)
+    if match:
+        extracted = match.group(1).strip()
+        # Code body mein se is return line ko kaat lo
+        cleaned_body = body_text[:-len(match.group(1))].strip()
+        print(f"🛡️ Protected Final Return: {extracted}")
+        return cleaned_body, extracted
+        
+    # Agar nahi mila, toh jaisa tha waisa wapas bhej do
+    return body_text, ""
+
+
 def fix_content(content, remove_unused=False):
     
     # The Regex: 
@@ -135,6 +155,17 @@ def fix_content(content, remove_unused=False):
     has_catch = "catch" in stripped_body
     has_finally = "finally" in stripped_body"""
 
+    stripped_body, extracted_return = extract_continue_operation(stripped_body)
+
+
+    # 🌟 YAHAN BANA HAI HELPER FUNCTION (finalize_content)
+    # Iska kaam hai naye code ke aakhiri mein extracted return ko wapas lagana
+    def finalize_content(new_body_content):
+        if extracted_return:
+            new_body_content += f"\n\n        {extracted_return}"
+        return content.replace(inner_body, f"\n        {new_body_content}\n")
+    # ==============================================================
+
     # CASE 1: None are there (Wrap everything)
     if not has_try and not has_catch and not has_finally:
         new_content = (
@@ -142,8 +173,9 @@ def fix_content(content, remove_unused=False):
             f"catch(e) {{\n        throw e;\n    }} "
             f"finally {{{nullify_logic}\n    }}"
         )
-        return content.replace(inner_body, f"\n    {new_content}\n")
-
+        #return content.replace(inner_body, f"\n    {new_content}\n")
+        return finalize_content(new_content)
+    
     # CASE 2: Only 'try' is there (Add catch and finally)
     if has_try and not has_catch and not has_finally:
         # Append catch and finally after the try block's closing brace
@@ -151,7 +183,8 @@ def fix_content(content, remove_unused=False):
         new_content = re.sub(r"(try\s*\{.*?\})(\s*)(?!catch|finally)", 
                              r"\1 catch(e) {\n        throw e;\n    } finally {" + nullify_logic + "\n    }", 
                              stripped_body, flags=re.DOTALL)
-        return content.replace(inner_body, f"\n    {new_content}\n")
+        #return content.replace(inner_body, f"\n    {new_content}\n")
+        return finalize_content(new_content)
 
     # CASE 3: 'try' and 'catch' are there (Add only finally)
     if has_try and has_catch and not has_finally:
@@ -159,8 +192,9 @@ def fix_content(content, remove_unused=False):
         new_content = re.sub(r"(catch\s*\(.*?\)\s*\{.*?\})(\s*)(?!finally)", 
                              r"\1 finally {" + nullify_logic + "\n    }", 
                              stripped_body, flags=re.DOTALL)
-        return content.replace(inner_body, f"\n    {new_content}\n")
-    
+        #return content.replace(inner_body, f"\n    {new_content}\n")
+        return finalize_content(new_content)
+
     # CASE 4: 'try' and 'finally' are there (Add only catch) and add nullification logic in finally
     if has_try and not has_catch and has_finally:
         # Append catch after the try block
@@ -174,7 +208,8 @@ def fix_content(content, remove_unused=False):
             if nullify_logic.strip() not in existing_inner:
                 new_finally = f"finally {{{existing_inner}{nullify_logic}\n    }}"
                 new_content = new_content.replace(finally_match.group(0), new_finally)
-        return content.replace(inner_body, f"\n    {new_content}\n")
+        #return content.replace(inner_body, f"\n    {new_content}\n")
+        return finalize_content(new_content)
 
     # CASE 5: 'try', 'catch', and 'finally' are all present (Append missing variables)
     if has_try and has_catch and has_finally:
@@ -194,7 +229,8 @@ def fix_content(content, remove_unused=False):
                 # Append the new nullification statements before the closing brace
                 new_finally = f"finally {{{existing_inner}{''.join(to_add)}\n    }}"
                 new_content = stripped_body.replace(finally_match.group(0), new_finally)
-                return content.replace(inner_body, f"\n    {new_content}\n")
+                return finalize_content(new_content) # <-- YAHAN CALL HUA FINALIZE -- to fix return contine operation issue
+                ##return content.replace(inner_body, f"\n    {new_content}\n") 
 
     return content
 
