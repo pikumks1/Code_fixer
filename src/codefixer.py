@@ -176,7 +176,7 @@ def fix_content(content, remove_unused=False):
     # CASE 1: None are there (Wrap everything)
     if not has_try and not has_catch and not has_finally:
         new_content = (
-            f"try {{\n        {stripped_body}\n    }} "
+            f"try {{\n    {stripped_body}\n    }} "
             f"catch(e) {{\n        throw e;\n    }} "
             f"finally {{{nullify_logic}\n    }}"
         )
@@ -185,13 +185,34 @@ def fix_content(content, remove_unused=False):
     
     # CASE 2: Only 'try' is there (Add catch and finally)
     if has_try and not has_catch and not has_finally:
-        # Append catch and finally after the try block's closing brace
-        # This regex looks for the last '}' of the try block
-        new_content = re.sub(r"(try\s*\{.*?\})(\s*)(?!catch|finally)", 
-                             r"\1 catch(e) {\n        throw e;\n    } finally {" + nullify_logic + "\n    }", 
-                             stripped_body, flags=re.DOTALL)
-        #return content.replace(inner_body, f"\n    {new_content}\n")
-        return finalize_content(new_content)
+        # Step 1: Find where 'try {' starts
+        try_match = re.search(r"\btry\s*\{", stripped_body)
+        
+        if try_match:
+            start_idx = try_match.end() - 1 # '{' ka index
+            bracket_count = 0
+            insert_pos = -1
+            
+            # Step 2: Bracket gin kar asli aakhiri '}' dhoondho (nested brackets ignore ho jayenge)
+            for i in range(start_idx, len(stripped_body)):
+                if stripped_body[i] == '{': 
+                    bracket_count += 1
+                elif stripped_body[i] == '}': 
+                    bracket_count -= 1
+                
+                # Jab count wapas 0 ho jaye, matlab try block officially khatam
+                if bracket_count == 0:
+                    insert_pos = i + 1 # '}' ke theek baad wali jagah
+                    break
+            
+            if insert_pos != -1:
+                # Step 3: Exact sahi jagah par catch aur finally chipkao
+                append_str = f" catch(e) {{\n    throw e;\n    }} finally {{{nullify_logic}\n    }}"
+                new_content = stripped_body[:insert_pos] + append_str + stripped_body[insert_pos:]
+                return finalize_content(new_content)
+
+        # Agar kisi wajah se loop fail ho jaye (Fallback)
+        return finalize_content(stripped_body)
 
     # CASE 3: 'try' and 'catch' are there (Add only finally)
     if has_try and has_catch and not has_finally:
