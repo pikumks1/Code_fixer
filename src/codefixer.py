@@ -170,7 +170,7 @@ def fix_content(content, remove_unused=False):
     def finalize_content(new_body_content):
         if extracted_return:
             new_body_content += f"\n\n        {extracted_return}"
-        return content.replace(inner_body, f"\n        {new_body_content}\n")
+        return content.replace(inner_body, f"\n    {new_body_content}\n")
     # ==============================================================
 
     # CASE 1: None are there (Wrap everything)

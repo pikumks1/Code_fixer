@@ -1,5 +1,5 @@
 function UpdateAccount() {
-        var boAcc = TheApplication().GetBusObject("Account");
+    var boAcc = TheApplication().GetBusObject("Account");
     var bcAcc = boAcc.GetBusComp("Account");
     var theapp = TheApplication();
     var view = theapp.GetActiveView();
