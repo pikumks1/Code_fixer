@@ -171,6 +171,24 @@ def fix_content(content, remove_unused=False):
         if extracted_return:
             new_body_content += f"\n\n        {extracted_return}"
         return content.replace(inner_body, f"\n    {new_body_content}\n")
+        
+    # 🌟 NAYA HELPER: Bracket Counter Function
+    # Ye function strictly '{' aur '}' ginta hai aur unka exact index return karta hai
+    def get_block_bounds(text, keyword_pattern):
+        match = re.search(keyword_pattern, text)
+        if not match: return -1, -1
+        
+        start_idx = text.find('{', match.start())
+        if start_idx == -1: return -1, -1
+        
+        bracket_count = 0
+        for i in range(start_idx, len(text)):
+            if text[i] == '{': bracket_count += 1
+            elif text[i] == '}':
+                bracket_count -= 1
+                if bracket_count == 0:
+                    return start_idx, i # Start aur End bracket ka exact index return karta hai
+        return -1, -1
     # ==============================================================
 
     # CASE 1: None are there (Wrap everything)
@@ -180,85 +198,64 @@ def fix_content(content, remove_unused=False):
             f"catch(e) {{\n        throw e;\n    }} "
             f"finally {{{nullify_logic}\n    }}"
         )
-        #return content.replace(inner_body, f"\n    {new_content}\n")
         return finalize_content(new_content)
     
     # CASE 2: Only 'try' is there (Add catch and finally)
     if has_try and not has_catch and not has_finally:
-        # Step 1: Find where 'try {' starts
-        try_match = re.search(r"\btry\s*\{", stripped_body)
-        
-        if try_match:
-            start_idx = try_match.end() - 1 # '{' ka index
-            bracket_count = 0
-            insert_pos = -1
-            
-            # Step 2: Bracket gin kar asli aakhiri '}' dhoondho (nested brackets ignore ho jayenge)
-            for i in range(start_idx, len(stripped_body)):
-                if stripped_body[i] == '{': 
-                    bracket_count += 1
-                elif stripped_body[i] == '}': 
-                    bracket_count -= 1
-                
-                # Jab count wapas 0 ho jaye, matlab try block officially khatam
-                if bracket_count == 0:
-                    insert_pos = i + 1 # '}' ke theek baad wali jagah
-                    break
-            
-            if insert_pos != -1:
-                # Step 3: Exact sahi jagah par catch aur finally chipkao
-                append_str = f" catch(e) {{\n    throw e;\n    }} finally {{{nullify_logic}\n    }}"
-                new_content = stripped_body[:insert_pos] + append_str + stripped_body[insert_pos:]
-                return finalize_content(new_content)
-
-        # Agar kisi wajah se loop fail ho jaye (Fallback)
+        _, end_idx = get_block_bounds(stripped_body, r"\btry\b")
+        if end_idx != -1:
+            append_str = f" catch(e) {{\n        throw e;\n    }} finally {{{nullify_logic}\n    }}"
+            new_content = stripped_body[:end_idx+1] + append_str + stripped_body[end_idx+1:]
+            return finalize_content(new_content)
         return finalize_content(stripped_body)
 
     # CASE 3: 'try' and 'catch' are there (Add only finally)
     if has_try and has_catch and not has_finally:
-        # Append finally after the catch block
-        new_content = re.sub(r"(catch\s*\(.*?\)\s*\{.*?\})(\s*)(?!finally)", 
-                             r"\1 finally {" + nullify_logic + "\n    }", 
-                             stripped_body, flags=re.DOTALL)
-        #return content.replace(inner_body, f"\n    {new_content}\n")
-        return finalize_content(new_content)
+        _, end_idx = get_block_bounds(stripped_body, r"\bcatch\s*\(")
+        if end_idx != -1:
+            append_str = f" finally {{{nullify_logic}\n    }}"
+            new_content = stripped_body[:end_idx+1] + append_str + stripped_body[end_idx+1:]
+            return finalize_content(new_content)
+        return finalize_content(stripped_body)
 
-    # CASE 4: 'try' and 'finally' are there (Add only catch) and add nullification logic in finally
+    # CASE 4: 'try' and 'finally' are there (Add catch and update finally)
     if has_try and not has_catch and has_finally:
-        # Append catch after the try block
-        new_content = re.sub(r"(try\s*\{.*?\})(\s*)(?!catch)", 
-                             r"\1 catch(e) {\n        throw e;\n    }", 
-                             stripped_body, flags=re.DOTALL)
-        # Now, we also need to ensure the nullification logic is in the finally block
-        finally_match = re.search(r"finally\s*\{([^}]*)\}", new_content, re.DOTALL)
-        if finally_match:
-            existing_inner = finally_match.group(1)
-            if nullify_logic.strip() not in existing_inner:
-                new_finally = f"finally {{{existing_inner}{nullify_logic}\n    }}"
-                new_content = new_content.replace(finally_match.group(0), new_finally)
-        #return content.replace(inner_body, f"\n    {new_content}\n")
+        # Step 1: Add catch after try
+        _, try_end_idx = get_block_bounds(stripped_body, r"\btry\b")
+        if try_end_idx != -1:
+            append_str = f" catch(e) {{\n        throw e;\n    }}"
+            new_content = stripped_body[:try_end_idx+1] + append_str + stripped_body[try_end_idx+1:]
+        else:
+            new_content = stripped_body
+
+        # Step 2: Inject nullify logic inside finally (if not already there)
+        fin_start, fin_end = get_block_bounds(new_content, r"\bfinally\b")
+        if fin_start != -1 and fin_end != -1:
+            existing_inner = new_content[fin_start+1:fin_end]
+            if nullify_logic.strip() and nullify_logic.strip() not in existing_inner:
+                new_finally_inner = existing_inner + nullify_logic + "\n    "
+                new_content = new_content[:fin_start+1] + new_finally_inner + new_content[fin_end:]
         return finalize_content(new_content)
 
     # CASE 5: 'try', 'catch', and 'finally' are all present (Append missing variables)
     if has_try and has_catch and has_finally:
-        finally_match = re.search(r"finally\s*\{([^}]*)\}", stripped_body, re.DOTALL)
-        if finally_match:
-            existing_inner = finally_match.group(1)
+        fin_start, fin_end = get_block_bounds(stripped_body, r"\bfinally\b")
+        if fin_start != -1 and fin_end != -1:
+            existing_inner = stripped_body[fin_start+1:fin_end]
             
-            # Filter variables: only add if the exact variable name is NOT found in the block
+            # Filter variables: check exact match
             to_add = []
             for v in all_vars:
-                # \b matches the position at the start or end of a word
-                # re.escape handles variables with special characters if any
                 if not re.search(rf"\b{re.escape(v)}\b", existing_inner):
                     to_add.append(f"\n        if(defined({v})) {v} = null;")
-
+            
             if to_add:
-                # Append the new nullification statements before the closing brace
-                new_finally = f"finally {{{existing_inner}{''.join(to_add)}\n    }}"
-                new_content = stripped_body.replace(finally_match.group(0), new_finally)
-                return finalize_content(new_content) # <-- YAHAN CALL HUA FINALIZE -- to fix return contine operation issue
-                ##return content.replace(inner_body, f"\n    {new_content}\n") 
+                # Add missing variables right before closing brace of finally
+                added_logic = "".join(to_add) + "\n    "
+                new_content = stripped_body[:fin_start+1] + existing_inner + added_logic + stripped_body[fin_end:]
+                return finalize_content(new_content)
+                
+        return finalize_content(stripped_body)
 
     return content
 
