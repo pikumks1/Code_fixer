@@ -128,9 +128,12 @@ async function processCode() {
     const isDirectNullifyChecked = document.getElementById("opt_direct_nullify").checked;
     console.log("Frontend Bhej Raha Hai: direct_nullify =", isDirectNullifyChecked); // Console(F12) mein dekho
 
+    const isForceRenullifyChecked = document.getElementById("opt_force_renullify").checked;
+    console.log("Frontend Bhej Raha Hai: force_renullify =", isForceRenullifyChecked); // Console(F12) mein dekho
+
     try {
-        const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
-        //const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
+        //const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
+        const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -139,7 +142,8 @@ async function processCode() {
                  code: originalCode, 
                  remove_unused: isRemoveChecked, 
                  remove_comments: isRemoveCommentChecked,
-                 direct_nullify: isDirectNullifyChecked
+                 direct_nullify: isDirectNullifyChecked,
+                 force_renullify: isForceRenullifyChecked
                 }) // API ko extra info bhej rahe hain ki kya remove karna hai
         });
 

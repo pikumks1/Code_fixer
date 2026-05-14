@@ -25,7 +25,7 @@ def extract_continue_operation(body_text):
     return body_text, ""
 
 
-def fix_content(content, remove_unused=False, direct_nullify=False):
+def fix_content(content, remove_unused=False, direct_nullify=False, force_renullify=False):
     
        # Identify the function body (content between the first { and last })
     body_match = re.search(r"(\{)(.*)(\})", content, re.DOTALL)
@@ -105,6 +105,9 @@ def fix_content(content, remove_unused=False, direct_nullify=False):
 
     # 3. REVERSE the list for Bottom-Up nullification
     all_vars = found_variables[::-1]
+
+    # 🌟 NAYI LINE: Backup le lo trimming se pehle!
+    original_vars = list(all_vars)
 
     # ==========================================
     # 🌟 MODULAR CLEANUP INTEGRATION
@@ -224,7 +227,6 @@ def fix_content(content, remove_unused=False, direct_nullify=False):
 
     # CASE 4: 'try' and 'finally' are there (Add catch and update finally)
     if has_try and not has_catch and has_finally:
-        # Step 1: Add catch after try
         _, try_end_idx = get_block_bounds(stripped_body, r"\btry\b")
         if try_end_idx != -1:
             append_str = f" catch(e) {{\n        throw e;\n    }}"
@@ -232,36 +234,55 @@ def fix_content(content, remove_unused=False, direct_nullify=False):
         else:
             new_content = stripped_body
 
-        # Step 2: Inject nullify logic inside finally (if not already there)
         fin_start, fin_end = get_block_bounds(new_content, r"\bfinally\b")
         if fin_start != -1 and fin_end != -1:
             existing_inner = new_content[fin_start+1:fin_end]
-            if nullify_logic.strip() and nullify_logic.strip() not in existing_inner:
-                new_finally_inner = existing_inner + nullify_logic + "\n    "
-                new_content = new_content[:fin_start+1] + new_finally_inner + new_content[fin_end:]
+            
+            if force_renullify:
+                lines = existing_inner.split('\n')
+                cleaned_lines = [line for line in lines if not any(re.search(rf"\b{re.escape(v)}\b\s*=\s*null", line) for v in original_vars)]
+                new_finally_inner = '\n'.join(cleaned_lines).rstrip() + nullify_logic + "\n    "
+            else:
+                # 🌟 FIX: Check individual variables like CASE 5, skip existing ones
+                to_add = []
+                for v in all_vars:
+                    if not re.search(rf"\b{re.escape(v)}\b", existing_inner):
+                        if direct_nullify:
+                            to_add.append(f"\n        {v} = null;")
+                        else:
+                            to_add.append(f"\n        if(defined({v})) {v} = null;")
+                
+                added_logic = "".join(to_add) + "\n    " if to_add else ""
+                new_finally_inner = existing_inner + added_logic
+
+            new_content = new_content[:fin_start+1] + new_finally_inner + new_content[fin_end:]
         return finalize_content(new_content)
 
-    # CASE 5: 'try', 'catch', and 'finally' are all present (Append missing variables)
+    # CASE 5: 'try', 'catch', and 'finally' are all present
     if has_try and has_catch and has_finally:
         fin_start, fin_end = get_block_bounds(stripped_body, r"\bfinally\b")
         if fin_start != -1 and fin_end != -1:
             existing_inner = stripped_body[fin_start+1:fin_end]
             
-            # Filter variables: check exact match
-            to_add = []
-            for v in all_vars:
-                if not re.search(rf"\b{re.escape(v)}\b", existing_inner):
-                    #to_add.append(f"\n        if(defined({v})) {v} = null;")
-                    if direct_nullify:
-                        to_add.append(f"\n        {v} = null;")
-                    else:
-                        to_add.append(f"\n        if(defined({v})) {v} = null;")
+            if force_renullify:
+                # 🌟 Delete karte waqt ORIGINAL_VARS use karo
+                lines = existing_inner.split('\n')
+                cleaned_lines = [line for line in lines if not any(re.search(rf"\b{re.escape(v)}\b\s*=\s*null", line) for v in original_vars)]
+                
+                existing_inner = '\n'.join(cleaned_lines)
+                added_logic = "\n" + nullify_logic.strip("\n") + "\n    "
+            else:
+                to_add = []
+                for v in all_vars:
+                    if not re.search(rf"\b{re.escape(v)}\b", existing_inner):
+                        if direct_nullify:
+                            to_add.append(f"\n        {v} = null;")
+                        else:
+                            to_add.append(f"\n        if(defined({v})) {v} = null;")
+                added_logic = "".join(to_add) + "\n    " if to_add else ""
             
-            if to_add:
-                # Add missing variables right before closing brace of finally
-                added_logic = "".join(to_add) + "\n    "
-                new_content = stripped_body[:fin_start+1] + existing_inner + added_logic + stripped_body[fin_end:]
-                return finalize_content(new_content)
+            new_content = stripped_body[:fin_start+1] + existing_inner + added_logic + stripped_body[fin_end:]
+            return finalize_content(new_content)
                 
         return finalize_content(stripped_body)
 
