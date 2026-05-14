@@ -25,8 +25,10 @@ if (var i=0; i>10; i++)
 
     } catch(e) {
         throw e;
-    }var abc="";
-    finally {
+    }
+    
+    var abc="";
+    finally{
         bcAcc = null;
         x=null;
         

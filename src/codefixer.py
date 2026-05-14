@@ -25,7 +25,7 @@ def extract_continue_operation(body_text):
     return body_text, ""
 
 
-def fix_content(content, remove_unused=False):
+def fix_content(content, remove_unused=False, direct_nullify=False):
     
        # Identify the function body (content between the first { and last })
     body_match = re.search(r"(\{)(.*)(\})", content, re.DOTALL)
@@ -150,7 +150,11 @@ def fix_content(content, remove_unused=False):
         #return content
     
     # Generate the nullifying statements for the finally block
-    nullify_logic = "".join([f"\n        if(defined({v})) {v} = null;" for v in all_vars])
+    #nullify_logic = "".join([f"\n        if(defined({v})) {v} = null;" for v in all_vars])
+    if direct_nullify:
+        nullify_logic = "".join([f"\n        {v} = null;" for v in all_vars])
+    else:
+        nullify_logic = "".join([f"\n        if(defined({v})) {v} = null;" for v in all_vars])
     
  ## removed code and moved to top.
 
@@ -247,7 +251,11 @@ def fix_content(content, remove_unused=False):
             to_add = []
             for v in all_vars:
                 if not re.search(rf"\b{re.escape(v)}\b", existing_inner):
-                    to_add.append(f"\n        if(defined({v})) {v} = null;")
+                    #to_add.append(f"\n        if(defined({v})) {v} = null;")
+                    if direct_nullify:
+                        to_add.append(f"\n        {v} = null;")
+                    else:
+                        to_add.append(f"\n        if(defined({v})) {v} = null;")
             
             if to_add:
                 # Add missing variables right before closing brace of finally

@@ -23,13 +23,14 @@ class CodeRequest(BaseModel):
     code: str
     remove_unused: bool = False # Default: False, agar client specify nahi karta
     remove_comments: bool = False 
+    direct_nullify: bool = False # Naya option for direct nullification
 
 # ✅ API endpoint
 @app.post("/process")
 def process_code(req: CodeRequest):
     try:
         # 1. Pehle Original Fixer chalao
-        result = fix_content(req.code, req.remove_unused)
+        result = fix_content(req.code, req.remove_unused, req.direct_nullify)
         
         # 2. Comments remove karna
         if req.remove_comments:
