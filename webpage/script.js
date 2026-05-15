@@ -798,3 +798,109 @@ function closeAnalysis() {
     }
 }
 
+
+
+// --- Feedback API Logic ---
+function sendFeedback() {
+    const messageInput = document.getElementById('fbMessage');
+    const emailInput = document.getElementById('fbEmail');
+    const submitBtn = document.getElementById('fbSubmitBtn');
+
+    const message = messageInput.value.trim();
+    const email = emailInput.value.trim();
+
+    if (!message) {
+        showToast("Please enter a message first.");
+        messageInput.focus();
+        return;
+    }
+
+    submitBtn.innerHTML = "Sending... ⏳";
+    submitBtn.disabled = true;
+
+    fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            access_key: "219b6a99-02c4-4e6c-ad59-6cdc9593a622", // Replace with actual key
+            subject: "Siebel Enhancer Pro - User Feedback",
+            from_name: email ? email : "Anonymous Developer",
+            message: message,
+            user_email: email
+        })
+    })
+    .then(async (response) => {
+        if (response.ok) {
+            showToast("Feedback sent successfully!");
+            document.getElementById('feedbackModal').style.display = 'none';
+            messageInput.value = '';
+            emailInput.value = '';
+        } else {
+            showToast("Failed to send feedback. Try again.");
+        }
+    })
+    .catch(error => {
+        console.error("Feedback API Error:", error);
+        showToast("Network error. Please check your connection.");
+    })
+    .finally(() => {
+        submitBtn.innerHTML = "Send Message";
+        submitBtn.disabled = false;
+    });
+}
+
+// Move and resize mailer box.
+(function() {
+    const fbModal = document.getElementById('feedbackModal');
+    const fbContent = fbModal.querySelector('.feedback-modal-content');
+    const fbHeader = fbModal.querySelector('.feedback-header');
+
+    let isDragging = false;
+    let fbOffset = [0, 0];
+
+    fbHeader.addEventListener('mousedown', function(e) {
+        if(e.target.closest('.feedback-close-btn')) return; 
+        
+        isDragging = true;
+        const rect = fbContent.getBoundingClientRect();
+        
+        // Ensure we are in fixed mode with pixels
+        fbContent.style.transform = 'none';
+        fbContent.style.left = rect.left + 'px';
+        fbContent.style.top = rect.top + 'px';
+        
+        fbOffset = [
+            rect.left - e.clientX,
+            rect.top - e.clientY
+        ];
+    }, true);
+
+    document.addEventListener('mouseup', () => isDragging = false);
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        let nLeft = e.clientX + fbOffset[0];
+        let nTop = e.clientY + fbOffset[1];
+        
+        const rect = fbContent.getBoundingClientRect();
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+        
+        // STRICT BOUNDARIES
+        // Upar header ke peeche hide hone se rokega
+        if (nTop < 0) nTop = 0;
+        if (nLeft < 0) nLeft = 0;
+        
+        // Bottom aur Right boundaries
+        if (nTop + rect.height > winH) nTop = winH - rect.height;
+        if (nLeft + rect.width > winW) nLeft = winW - rect.width;
+        
+        fbContent.style.left = nLeft + 'px';
+        fbContent.style.top  = nTop + 'px';
+    }, true);
+})();
