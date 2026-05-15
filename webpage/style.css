@@ -662,3 +662,56 @@ textarea:focus {
     from { transform: translateX(0); opacity: 1; }
     to { transform: translateX(120%); opacity: 0; }
 }
+
+
+/* Background overlay ko invisible aur click-through banayein */
+#analysisPanel {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: transparent !important;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Modal box ki sleek styling aur resize property */
+#analysisPanel .modal-content {
+    position: fixed; 
+    top: 100px;
+    right: 50px;
+    width: 380px; 
+    min-width: 250px;
+    min-height: 120px;
+    max-height: 80vh; /* Screen ki height ka 80% max limit */
+    max-width: 95vw;  /* Screen ki width se bahar na jaye */
+    margin: 0 !important;
+    pointer-events: auto;
+    background: #ffffff;
+    resize: both; 
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#analysisPanel .modal-header {
+    cursor: move;
+}
+
+#analysisList {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* Fix close button visibility */
+#analysisPanel .close-btn {
+    color: #ef4444 !important; /* Prominent red color */
+    font-weight: bold;
+    opacity: 1 !important;
+    cursor: pointer;
+}
+
+/* Remove background blur and dark overlay for this specific modal */
+#analysisPanel {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    pointer-events: none; /* Allows clicking on the editor behind it */
+}

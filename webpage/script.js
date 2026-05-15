@@ -132,8 +132,8 @@ async function processCode() {
     console.log("Frontend Bhej Raha Hai: force_renullify =", isForceRenullifyChecked); // Console(F12) mein dekho
 
     try {
-        //const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
-        const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
+        const res = await fetch("http://127.0.0.1:8000/process", { // Local server ke liye}
+        //const res = await fetch("https://code-fixer-568v.onrender.com/process", { //this is to call form deployed server: https://code-fixer-568v.onrender.com/process, for local server use: http://127.0.0.1:8000/process
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -660,3 +660,141 @@ function showToast(message) {
         toast.remove();
     }, 3000);
 }
+
+// --- Phase 1: Syntax Checker using JSHint ---
+function checkSyntaxCode() {
+    console.log("Check Syntax function executed."); // For debugging
+
+    // Ensure diffEditor is loaded by Monaco
+    if (typeof diffEditor === 'undefined' || !diffEditor) {
+        console.error("Monaco Editor is not fully initialized yet.");
+        showToast("Editor is still loading. Please wait a moment.");
+        return;
+    }
+
+    // Retrieve code from the active Monaco Editor instance
+    let codeToAnalyze = "";
+    if (window.lastFocusedEditor === 'modified') {
+        codeToAnalyze = diffEditor.getModel().modified.getValue();
+    } else {
+        codeToAnalyze = diffEditor.getModel().original.getValue();
+    }
+
+    // Validate if the editor contains processable code
+    if (!codeToAnalyze || codeToAnalyze.includes("Paste your original Siebel eScript here")) {
+        showToast("Please provide valid code to analyze.");
+        return;
+    }
+
+    // Validate JSHint Library
+    if (typeof JSHINT === 'undefined') {
+        console.error("JSHint library is not loaded.");
+        showToast("Error: JSHint library failed to load.");
+        return;
+    }
+
+    // Configure JSHint options
+    // 🌟 JSHint Options for Siebel eScript
+    const options = {
+        esversion: 5,  
+        undef: true,    // Typos pakdega
+        asi: true,      // Missing semicolon ko ignore karega
+        eqnull: true,   // '== null' ko allow karega
+        laxbreak: true, // Line break errors ignore karega
+        shadow: true,   // Variable re-declaration ko ignore karega (common in Siebel)
+        expr: true,     // Short-hand if-else (ternary) allow karega
+        sub: true,       // Dot notation warnings ignore karega
+        funcscope: true    // Functions ke andar variables ko local samjhega
+    };
+
+    // 🌟 Siebel Global Variables (JSHint inko error nahi manega)
+    const globals = {
+        "TheApplication": false, "Clib": false, "SEblib": false, "SElib": false,
+        "CancelOperation": false, "ContinueOperation": false,
+        "ForwardOnly": false, "ForwardBackward": false,
+        "NewAfter": false, "NewBefore": false, "NewBeforeCopy": false,
+        "try": false, "catch": false, "finally": false, "throw": false, 
+        "Math": false, "defined": false, "Date": false, "JSON": false,
+        "parseInt": false, "parseFloat": false, "isNaN": false,
+        "console": false, "alert": false, "null": false
+    };
+
+    // Remove Siebel strong typing annotations specifically for JSHint analysis
+    let codeForJSHint = codeToAnalyze.replace(/:\s*(chars|string|number|boolean|object|date|float|int|void)/gi, "");
+    
+    // Convert Siebel 'defined(var)' to standard JS for the checker
+    codeForJSHint = codeForJSHint.replace(/defined\(([^)]+)\)/g, "(typeof $1 !== 'undefined')");
+
+    // Execute Analysis
+    JSHINT(codeForJSHint, options, globals);
+
+    const resultContainer = document.getElementById('analysisList');
+    const analysisModal = document.getElementById('analysisPanel');
+
+    // 🌟 STRICT FILTER & SLEEK UI START
+    let validErrors = [];
+    let uniqueTracker = new Set(); // Duplicate errors block karne ke liye
+
+    if (JSHINT.errors) {
+        JSHINT.errors.forEach(err => {
+            if (!err) return;
+            
+            // "Out of scope" ya "already defined" ko ignore karein
+            let reasonLower = err.reason.toLowerCase();
+            if (reasonLower.includes("out of scope") || reasonLower.includes("already defined")) {
+                return; 
+            }
+
+            // Duplicate errors ko line number aur reason se filter karein
+            let uniqueKey = err.line + "_" + err.reason;
+            if (!uniqueTracker.has(uniqueKey)) {
+                uniqueTracker.add(uniqueKey);
+                validErrors.push(err);
+            }
+        });
+    }
+
+    if (validErrors.length > 0) {
+        let errorHtml = `<div style="width: 100%;">
+                            <div style="font-size: 12px; font-weight: 600; color: #dc2626; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                Found ${validErrors.length} Syntax Issues
+                            </div>
+                            <ul style="margin: 0; padding-left: 0; list-style: none;">`;
+        
+        validErrors.forEach(err => {
+            errorHtml += `<li style="font-size: 11px; margin-bottom: 6px; padding: 8px; background: #fff; border: 1px solid #fee2e2; border-left: 3px solid #ef4444; border-radius: 4px; color: #475569;">
+                            <span style="font-weight: 600; color: #1e293b;">Line ${err.line}:</span> ${err.reason} 
+                            <div style="margin-top: 4px; color: #94a3b8; font-family: monospace; background: #f8fafc; padding: 4px; border-radius: 3px; font-size: 10px;">
+                                ${err.evidence ? err.evidence.trim() : ''}
+                            </div>
+                          </li>`;
+        });
+        errorHtml += "</ul></div>";
+        
+        if (resultContainer) {
+            resultContainer.innerHTML = errorHtml;
+            if (analysisModal) analysisModal.style.display = 'block'; 
+        }
+        showToast("Syntax errors detected.");
+    } else {
+        if (resultContainer) {
+            resultContainer.innerHTML = `<div style="font-size: 11px; color: #059669; background: #ecfdf5; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #a7f3d0; font-weight: 500;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px; margin-top: -2px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                            Code is valid. No syntax errors detected.
+                                         </div>`;
+            if (analysisModal) analysisModal.style.display = 'block';
+        }
+        showToast("Syntax check passed successfully.");
+    }
+    // 🌟 STRICT FILTER & SLEEK UI END
+}
+
+// Update the close function to ensure it works
+function closeAnalysis() {
+    const panel = document.getElementById("analysisPanel");
+    if (panel) {
+        panel.style.display = 'none';
+    }
+}
+

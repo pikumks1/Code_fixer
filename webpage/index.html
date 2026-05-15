@@ -36,10 +36,11 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.11/beautify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.15.4/beautify.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js"></script>
     <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
     
-    <script src="script.js"></script>
-    <script src="webpage/script.js"></script>
+    <script src="script.js" defer></script>
+    <script src="webpage/script.js" defer></script>
     
     <script type="application/ld+json">
     {
@@ -109,6 +110,13 @@
                     <circle cx="12" cy="12" r="3"></circle>
                 </svg>
                 <span style="font-size: 12px; margin-left: 5px; font-weight: 600;">Analyze</span>
+            </button>
+            <button id="btnCheckSyntax" onclick="checkSyntaxCode()" class="action-btn" title="Check Code Syntax">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                Check Syntax
             </button>
             <button onclick="toggleFullScreen()" class="nav-icon-btn" title="Toggle Full Screen">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -327,15 +335,89 @@
 </div>
 
 <div id="analysisPanel" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>⚙️ Analysis Results</h3>
-            <button onclick="closeAnalysis()" class="close-btn">✖</button>
+    <div class="modal-content" style="border: none; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.2);">
+        <div class="modal-header" style="background: linear-gradient(135deg, #4f46e5, #06b6d4); padding: 10px 15px; border-bottom: none;">
+            <h3 style="margin: 0; font-size: 13px; color: #ffffff; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                Analysis Results
+            </h3>
+            <button onclick="closeAnalysis()" class="close-btn" style="color: #ffffff !important; padding: 0; font-size: 16px;">✖</button>
         </div>
-        <div id="analysisList" class="settings-grid" style="display: block; max-height: 300px; overflow-y: auto;">
-            </div>
+        <div id="analysisList" style="flex: 1; font-size: 13px; overflow-y: auto; padding: 12px; background: #f8fafc; min-height: 80px;">
+        </div>
     </div>
 </div>
+
+<script>
+    (function() {
+        const panel = document.getElementById('analysisPanel');
+        if (!panel) return;
+        
+        const content = panel.querySelector('.modal-content');
+        const header = panel.querySelector('.modal-header');
+
+        let isDown = false;
+        let offset = [0, 0];
+
+        header.style.cursor = 'move';
+
+        header.addEventListener('mousedown', function(e) {
+            if(e.target.closest('.close-btn')) return; 
+            
+            isDown = true;
+            
+            const rect = content.getBoundingClientRect();
+            
+            content.style.position = 'fixed';
+            content.style.left = rect.left + 'px';
+            content.style.top = rect.top + 'px';
+            content.style.margin = '0';
+            content.style.right = 'auto';
+            content.style.bottom = 'auto';
+            
+            offset = [
+                rect.left - e.clientX,
+                rect.top - e.clientY
+            ];
+        }, true);
+
+        document.addEventListener('mouseup', function() {
+            isDown = false;
+        }, true);
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDown) return;
+            e.preventDefault();
+            
+            let newLeft = e.clientX + offset[0];
+            let newTop = e.clientY + offset[1];
+            
+            const rect = content.getBoundingClientRect();
+            
+            // STRICT BOUNDARIES:
+            // 1. Top boundary (Header kabhi screen ke upar nahi jayega)
+            if (newTop < 0) newTop = 0;
+            
+            // 2. Left boundary (Left side se bahar nahi jayega)
+            if (newLeft < 0) newLeft = 0;
+            
+            // 3. Bottom boundary (Screen ke niche nahi jayega)
+            if (newTop + rect.height > window.innerHeight) {
+                newTop = window.innerHeight - rect.height;
+                // Agar window size height se bada ho gaya hai, toh 0 pe lock karo
+                if (newTop < 0) newTop = 0; 
+            }
+            
+            // 4. Right boundary (Right side se bahar nahi jayega)
+            if (newLeft + rect.width > window.innerWidth) {
+                newLeft = window.innerWidth - rect.width;
+            }
+            
+            content.style.left = newLeft + 'px';
+            content.style.top  = newTop + 'px';
+        }, true);
+    })();
+</script>
 
 <div id="beautifyModal" class="modal-overlay" style="display: none;">
     <!-- <Pop up Beautify settings div> -->
@@ -389,6 +471,11 @@
     </div>
 
     <div id="toast-container"></div>
+
+    <!-- calling the libraries at the end for better performance and faster load times -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.13.6/jshint.min.js"></script>
+    <script src="script.js"></script>
+    <script src="webpage/script.js"></script> -->
 
 </body>
 </html>
