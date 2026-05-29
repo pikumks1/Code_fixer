@@ -113,6 +113,7 @@ function toggleTheme() {
 
 // Core API interaction and UI state management
 async function processCode() {
+    diffEditor.getModel().modified.setValue("// Optimized code will appear here\n"); // to clear previous results and show loading state
     const originalCode = diffEditor.getModel().original.getValue();
     const loader = document.getElementById("loaderOverlay");
 
