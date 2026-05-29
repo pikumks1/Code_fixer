@@ -18,8 +18,9 @@ require(['vs/editor/editor.main'], function () {
         }
     );
 
-    const originalModel = monaco.editor.createModel("// Paste your original Siebel eScript here", "javascript");
-    const modifiedModel = monaco.editor.createModel("// Optimized code will appear here", "javascript");
+    // 🌟 CHANGED: Dono models ab strictly khali (blank) hain taaki placeholder dikhe
+    const originalModel = monaco.editor.createModel("", "javascript");
+    const modifiedModel = monaco.editor.createModel("", "javascript");
 
     diffEditor.setModel({
         original: originalModel,
@@ -32,13 +33,74 @@ require(['vs/editor/editor.main'], function () {
     originalEditor.updateOptions({ readOnly: false });
     modifiedEditor.updateOptions({ readOnly: false });
 
+    // ==========================================
+    // 🌟 PREMIUM PLACEHOLDER LOGIC (BOTH EDITORS)
+    // ==========================================
+    
+    // --- 1. Original Editor Placeholder ---
+    const originalDomNode = originalEditor.getDomNode();
+    let origPlaceholder = null;
+
+    if (originalDomNode) {
+        // Create Placeholder Element
+        origPlaceholder = document.createElement('div');
+        origPlaceholder.className = 'monaco-placeholder';
+        origPlaceholder.innerText = '// Paste your original Siebel eScript here...';
+        originalDomNode.appendChild(origPlaceholder);
+
+        // Hide/Show Logic
+        const toggleOrigPlaceholder = () => {
+            const hasContent = originalEditor.getValue().length > 0;
+            // Agar code hai, ya editor focused hai, toh hide kar do
+            if (hasContent || originalEditor.hasTextFocus()) {
+                origPlaceholder.style.display = 'none';
+            } else {
+                origPlaceholder.style.display = 'block';
+            }
+        };
+
+        // Event Listeners for Placeholder
+        originalEditor.onDidBlurEditorWidget(toggleOrigPlaceholder);
+        originalEditor.onDidChangeModelContent(toggleOrigPlaceholder);
+        
+        // Initial setup
+        toggleOrigPlaceholder();
+    }
+
+    // --- 2. Modified Editor Placeholder ---
+    const modifiedDomNode = modifiedEditor.getDomNode();
+    let modPlaceholder = null;
+
+    if (modifiedDomNode) {
+        modPlaceholder = document.createElement('div');
+        modPlaceholder.className = 'monaco-placeholder';
+        modPlaceholder.innerText = '// Optimized code will appear here...';
+        modifiedDomNode.appendChild(modPlaceholder);
+
+        const toggleModPlaceholder = () => {
+            const hasContent = modifiedEditor.getValue().length > 0;
+            if (hasContent || modifiedEditor.hasTextFocus()) {
+                modPlaceholder.style.display = 'none';
+            } else {
+                modPlaceholder.style.display = 'block';
+            }
+        };
+
+        modifiedEditor.onDidBlurEditorWidget(toggleModPlaceholder);
+        modifiedEditor.onDidChangeModelContent(toggleModPlaceholder);
+        
+        toggleModPlaceholder();
+    }
+
     // --- TRACKERS: Remember the last clicked editor ---
     originalEditor.onDidFocusEditorWidget(() => {
         window.lastFocusedEditor = 'original';
+        if (origPlaceholder) origPlaceholder.style.display = 'none'; // Focus par hide
     });
 
     modifiedEditor.onDidFocusEditorWidget(() => {
         window.lastFocusedEditor = 'modified';
+        if (modPlaceholder) modPlaceholder.style.display = 'none'; // Focus par hide
     });
 
     // Page load hote hi dropdown generate karo
@@ -113,7 +175,8 @@ function toggleTheme() {
 
 // Core API interaction and UI state management
 async function processCode() {
-    diffEditor.getModel().modified.setValue("// Optimized code will appear here\n"); // to clear previous results and show loading state
+    // 🌟 CHANGED: Set to blank instead of hardcoded string to clear previous results and show loading state
+    diffEditor.getModel().modified.setValue(""); 
     const originalCode = diffEditor.getModel().original.getValue();
     const loader = document.getElementById("loaderOverlay");
 
@@ -217,8 +280,8 @@ function beautifyCode() {
 
     // Optional: Pre-process for missing semicolons
     if (doSemicolon) {
-        //if (origCode && !origCode.includes("Paste your original")) origCode = autoInsertSemicolons(origCode);
-        if (modCode && !modCode.includes("Optimized code will")) modCode = autoInsertSemicolons(modCode);
+        // 🌟 CHANGED: Using .trim() instead of hardcoded placeholder text
+        if (modCode && modCode.trim()) modCode = autoInsertSemicolons(modCode);
     }
 
     // 2. Setup js-beautify exactly like beautifier.io
@@ -235,11 +298,7 @@ function beautifyCode() {
     };
 
     // 3. Apply the magic
-    //if (origCode && !origCode.includes("Paste your original")) {
-   //     originalEditor.setValue(js_beautify(origCode, formatOptions));
-   // }
-    
-    if (modCode && !modCode.includes("Optimized code will")) {
+    if (modCode && modCode.trim()) {
         modifiedEditor.setValue(js_beautify(modCode, formatOptions));
     }
     showToast("Code beautified with your settings!"); // Toast for feedback
@@ -247,9 +306,9 @@ function beautifyCode() {
 
 // Clears the editors and resets them to their default placeholder states
 function clearCode() {
-    // Resetting content to base state
-    diffEditor.getModel().original.setValue("// Paste your original Siebel eScript here\n");
-    diffEditor.getModel().modified.setValue("// Optimized code will appear here\n");
+    // 🌟 CHANGED: Dono ko khali karenge toh placeholders wapas aa jayenge
+    diffEditor.getModel().original.setValue("");
+    diffEditor.getModel().modified.setValue("");
     
     // Reset internal focus tracker
     window.lastFocusedEditor = 'original';
@@ -260,8 +319,8 @@ async function copyFixedCode() {
     try {
         const fixedCode = diffEditor.getModel().modified.getValue();
         
-        // Prevent copying empty or placeholder text
-        if (!fixedCode || fixedCode.includes("Optimized code will appear here")) {
+        // 🌟 CHANGED: Prevent copying empty text using trim
+        if (!fixedCode.trim()) {
             // Alert ki jagah Toast use kiya
             showToast("⚠️ Please fix the code first before copying."); 
             return;
@@ -284,8 +343,8 @@ async function copyFixedCode() {
 function downloadFixedCode() {
     const fixedCode = diffEditor.getModel().modified.getValue();
     
-    // Prevent downloading empty or placeholder text
-    if (!fixedCode || fixedCode.includes("Optimized code will appear here")) {
+    // 🌟 CHANGED: Using trim to check empty
+    if (!fixedCode.trim()) {
         alert("Please fix the code first before downloading.");
         return;
     }
@@ -399,7 +458,8 @@ function saveCustomSnippet() {
     }
 
     // Validation
-    if (!textToSave.trim() || textToSave.includes("Paste your original Siebel eScript here")) {
+    // 🌟 CHANGED: Sirf empty trim check kiya
+    if (!textToSave.trim()) {
         alert("Please write or highlight some valid code in the editor to save as a snippet.");
         return;
     }
@@ -469,7 +529,8 @@ function handleFileUpload(event) {
         diffEditor.getModel().original.setValue(fileContent);
         
         // 2. Right (Modified) editor ko reset kar do taaki purana code na dikhe
-        diffEditor.getModel().modified.setValue("// Uploaded file loaded. Click Process to optimize.\n");
+        // 🌟 CHANGED: Isko empty rakha taaki placeholder clear dikhe
+        diffEditor.getModel().modified.setValue("");
         
         // 3. Focus reset kar do
         window.lastFocusedEditor = 'original';
@@ -682,7 +743,8 @@ function checkSyntaxCode() {
     }
 
     // Validate if the editor contains processable code
-    if (!codeToAnalyze || codeToAnalyze.includes("Paste your original Siebel eScript here")) {
+    // 🌟 CHANGED: Sirf empty trim check kiya
+    if (!codeToAnalyze.trim()) {
         showToast("Please provide valid code to analyze.");
         return;
     }

@@ -847,3 +847,18 @@ textarea:focus {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+
+/* --- Monaco Editor Placeholder Styling --- */
+.monaco-placeholder {
+    position: absolute;
+    top: 5px;       /* Top se thoda margin */
+    left: 65px;     /* Line numbers (gutter) ke baad ki spacing */
+    color: #9ca3af; /* Light greyish placeholder color */
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+    font-style: italic;
+    pointer-events: none; /* 🌟 Zaroori: Isse clicks seedha editor par jayenge */
+    z-index: 10;
+    user-select: none;
+}
